@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,8 @@ public class ProteoformProteinCache extends ProteinCache {
 	private final File proteinCacheFile;
 	private boolean loaded;
 	private final static Charset CHARSET = StandardCharsets.UTF_8;
+	private final List<Integer> indexesToWrite = new ArrayList<Integer>();
+	private static final int bufferSize = 100;
 
 	public ProteoformProteinCache(ExtendedAssignMass extendedAssignMass, File proteinCacheFile) {
 		this.extendedAssignMass = extendedAssignMass;
@@ -88,9 +91,6 @@ public class ProteoformProteinCache extends ProteinCache {
 				sb.append(peptideSeq.charAt(pos - 1));
 			}
 		}
-		if (sb.toString().equals("MEEPQS[P->S]PSVEPPLSQETFSDLWK")) {
-			log.info(applyPTMs(peptideSeq, ptms));
-		}
 		return sb.toString();
 	}
 
@@ -112,49 +112,87 @@ public class ProteoformProteinCache extends ProteinCache {
 				}
 			}
 			br.close();
+
 		}
+		loaded = true;
 	}
 
 	@Override
-	public void addProtein(String def) {
+	protected synchronized boolean isPopulated() {
+		// load first
+		try {
+			load();
+		} catch (final IOException e) {
+			e.printStackTrace();
+			log.warn("Error loading protein cache from protein cache file: '" + proteinCacheFile.getAbsolutePath()
+					+ "'");
+		}
+		return super.isPopulated();
+	}
+
+	@Override
+	public int addProtein(String def) {
 
 		try {
 			load();
-			if (!proteinCacheFile.getParentFile().exists()) {
-				proteinCacheFile.getParentFile().mkdirs();
+			final int ret = defs.indexOf(def);
+			if (ret >= 0) {
+				return ret;
 			}
-			final int proteinIndex = defs.size();
-			final OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(proteinCacheFile, true),
-					CHARSET);
-			out.write(proteinIndex + "\t" + def + "\n");
-			out.close();
-
-			super.addProtein(def);
-
+			final int index = super.addProtein(def);
+			addToBuffer(index);
+			return index;
 		} catch (final IOException e) {
 			e.printStackTrace();
 		}
+		return -1;
 	}
 
 	@Override
 	public int addProtein(String def, String protein) {
 		try {
 			load();
-			if (!proteinCacheFile.getParentFile().exists()) {
-				proteinCacheFile.getParentFile().mkdirs();
+			final int ret = defs.indexOf(def);
+			if (ret >= 0) {
+				return ret;
 			}
-			final int proteinIndex = defs.size();
-			final OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(proteinCacheFile, true),
-					CHARSET);
-			out.write(proteinIndex + "\t" + def + "\t" + protein + "\n");
-			out.close();
 
-			return super.addProtein(def, protein);
+			final int index = super.addProtein(def, protein);
+			addToBuffer(index);
+			return index;
 		} catch (final FileNotFoundException e) {
 		} catch (final IOException e) {
 			e.printStackTrace();
 		}
 		return -1;
+	}
+
+	private void addToBuffer(int index) {
+		indexesToWrite.add(index);
+		// check if we should write
+		if (indexesToWrite.size() >= bufferSize) {
+			writeBuffer();
+		}
+	}
+
+	public synchronized void writeBuffer() {
+		try {
+			load();
+			if (!indexesToWrite.isEmpty()) {
+				log.info("Writting protein cache to file...");
+				final OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(proteinCacheFile, true),
+						CHARSET);
+				for (final Integer index : indexesToWrite) {
+					out.write(index + "\t" + defs.get(index) + "\t" + sequences.get(index) + "\n");
+				}
+				out.close();
+				indexesToWrite.clear();
+			}
+		} catch (final FileNotFoundException e) {
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 }

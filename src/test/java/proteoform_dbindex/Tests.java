@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
 
+import edu.scripps.yates.annotations.uniprot.UniprotProteinLocalRetriever;
 import edu.scripps.yates.dbindex.DBIndexInterface;
 import edu.scripps.yates.dbindex.IndexedProtein;
 import edu.scripps.yates.dbindex.IndexedSequence;
@@ -85,7 +86,8 @@ public class Tests {
 		((DBIndexSearchParamsImpl) defaultDBIndexParams).setInMemoryIndex(inMemoryIndex);
 
 		final ProteoformDBIndexInterface dbIndex = new ProteoformDBIndexInterface(defaultDBIndexParams, useUniprot,
-				usePhosphoSite, "human", uniprotReleasesFolder, null, numVariationsPerPeptide);
+				usePhosphoSite, "human", new UniprotProteinLocalRetriever(uniprotReleasesFolder, true, true, true),
+				null, numVariationsPerPeptide);
 		final String peptideSeq = "MEEPQSDPSVEPPLSQETFSDLWK";
 		final Set<IndexedProtein> proteins = dbIndex.getProteins(peptideSeq);
 		Assert.assertFalse(proteins.isEmpty());

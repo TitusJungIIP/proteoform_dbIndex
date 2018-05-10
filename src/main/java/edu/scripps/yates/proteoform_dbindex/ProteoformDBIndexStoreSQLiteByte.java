@@ -9,7 +9,6 @@ import java.util.Map;
 import edu.scripps.yates.dbindex.Constants;
 import edu.scripps.yates.dbindex.DBIndexStoreException;
 import edu.scripps.yates.dbindex.DBIndexStoreSQLiteByte;
-import edu.scripps.yates.dbindex.DynByteBuffer;
 import edu.scripps.yates.dbindex.IndexedSequence;
 import edu.scripps.yates.dbindex.ProteinCache;
 import edu.scripps.yates.dbindex.ResidueInfo;
@@ -19,6 +18,7 @@ import edu.scripps.yates.proteoform_dbindex.model.ExtendedAssignMass;
 import edu.scripps.yates.proteoform_dbindex.model.IndexedSeqInternalWithPtms;
 import edu.scripps.yates.proteoform_dbindex.model.PTM;
 import edu.scripps.yates.proteoform_dbindex.util.ByteArrayUtil;
+import edu.scripps.yates.utilities.bytes.DynByteBuffer;
 import gnu.trove.map.hash.THashMap;
 import gnu.trove.set.hash.TIntHashSet;
 
@@ -184,4 +184,13 @@ public class ProteoformDBIndexStoreSQLiteByte extends DBIndexStoreSQLiteByte {
 		}
 
 	}
+
+	@Override
+	public void stopAddSeq() throws DBIndexStoreException {
+		if (proteinCache instanceof ProteoformProteinCache) {
+			((ProteoformProteinCache) proteinCache).writeBuffer();
+		}
+		super.stopAddSeq();
+	}
+
 }

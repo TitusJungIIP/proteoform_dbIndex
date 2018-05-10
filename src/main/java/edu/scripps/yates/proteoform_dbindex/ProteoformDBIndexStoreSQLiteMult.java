@@ -86,4 +86,12 @@ public class ProteoformDBIndexStoreSQLiteMult extends DBIndexStoreSQLiteMult {
 			buckets[i].setProteinCache(proteinCache);
 		}
 	}
+
+	@Override
+	public void stopAddSeq() throws DBIndexStoreException {
+		if (proteinCache instanceof ProteoformProteinCache) {
+			((ProteoformProteinCache) proteinCache).writeBuffer();
+		}
+		super.stopAddSeq();
+	}
 }

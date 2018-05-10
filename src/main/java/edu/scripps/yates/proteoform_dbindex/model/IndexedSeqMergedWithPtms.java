@@ -3,7 +3,7 @@ package edu.scripps.yates.proteoform_dbindex.model;
 import java.util.List;
 
 import edu.scripps.yates.dbindex.DBIndexStoreSQLiteByteIndexMerge;
-import edu.scripps.yates.dbindex.DynByteBuffer;
+import edu.scripps.yates.utilities.bytes.DynByteBuffer;
 
 /**
  * internal temporarly representation of indexed sequence before sequences are

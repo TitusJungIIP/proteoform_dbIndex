@@ -2,6 +2,7 @@ package edu.scripps.yates.proteoform_dbindex;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -9,9 +10,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.compomics.util.general.UnknownElementMassException;
-import com.compomics.util.protein.AASequenceImpl;
-import com.compomics.util.protein.Enzyme;
-import com.compomics.util.protein.Protein;
 
 import edu.scripps.yates.annotations.uniprot.UniprotProteinLocalRetriever;
 import edu.scripps.yates.annotations.uniprot.proteoform.Proteoform;
@@ -32,6 +30,8 @@ import edu.scripps.yates.proteoform_dbindex.model.SequenceChange;
 import edu.scripps.yates.proteoform_dbindex.model.SequenceWithModification;
 import edu.scripps.yates.proteoform_dbindex.util.ProteoformDBIndexUtil;
 import edu.scripps.yates.utilities.fasta.FastaParser;
+import edu.scripps.yates.utilities.sequence.MyEnzyme;
+import gnu.trove.map.hash.TIntObjectHashMap;
 
 public class ProteoformDBIndexer extends DBIndexer {
 	private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(ProteoformDBIndexer.class);
@@ -46,17 +46,19 @@ public class ProteoformDBIndexer extends DBIndexer {
 	private final PhosphositeDB phosphositeDB;
 	private final UniprotProteoformRetrieverFromXML proteoformRetriever;
 	private final int maxNumVariationsPerPeptide;
-	private Enzyme enzyme;
+	private MyEnzyme enzyme;
 	private final ExtendedAssignMass extendedAssignMass;
+	private final UniprotProteinLocalRetriever uplr;
 
 	public ProteoformDBIndexer(DBIndexSearchParams sparam, IndexerMode indexerMode, boolean useUniprot,
-			boolean usePhosphosite, String phosphoSiteSpecies, File uniprotReleasesFolder, String uniprotVersion,
+			boolean usePhosphosite, String phosphoSiteSpecies, UniprotProteinLocalRetriever uplr, String uniprotVersion,
 			int maxNumVariationsPerPeptide) throws IOException {
 		super(sparam, indexerMode,
 				new ProteoformDBIndexStoreSQLiteMult(sparam, false,
 						ExtendedAssignMass.getInstance(sparam.isUseMonoParent(),
 								new File(new File(sparam.getFullIndexFileName()).getAbsolutePath() + File.separator
 										+ PTMCodeObj.FILE_NAME))));
+		this.uplr = uplr;
 		this.usePhosphosite = usePhosphosite;
 		this.useUniprot = useUniprot;
 		if (usePhosphosite) {
@@ -69,7 +71,7 @@ public class ProteoformDBIndexer extends DBIndexer {
 		} else {
 			phosphositeDB = null;
 		}
-		final UniprotProteinLocalRetriever uplr = new UniprotProteinLocalRetriever(uniprotReleasesFolder, true);
+
 		proteoformRetriever = new UniprotProteoformRetrieverFromXML(uplr, uniprotVersion);
 
 		this.maxNumVariationsPerPeptide = maxNumVariationsPerPeptide;
@@ -89,24 +91,28 @@ public class ProteoformDBIndexer extends DBIndexer {
 	 */
 	@Override
 	protected void cutSeq(final String proteinFastaHeader, String canonicalProtSeq) throws IOException {
+		// clear enzyme cache
+		getEnzyme().clearCache();
+		//
 		final String protAccession = FastaParser.getUniProtACC(proteinFastaHeader);
 		if (protAccession == null) {
 			throw new IllegalArgumentException(
-					"Uniprot accession cannot be extracted from fasta header: '" + proteinFastaHeader + "'");
+					"Uniprot accession cannot be extracted from fasta header:  '" + proteinFastaHeader + "'");
 		}
-
-		final Protein[] canonicalProteinPeptides = digestProtein(canonicalProtSeq);
+		final String canonicalAccession = FastaParser.getNoIsoformAccession(protAccession);
+		final List<String> canonicalProteinPeptides = digestProtein(canonicalProtSeq);
 
 		Map<String, List<Proteoform>> proteoformMap = new HashMap<String, List<Proteoform>>();
 		if (useUniprot) {
-			proteoformMap = proteoformRetriever.getProteoforms(protAccession);
+			proteoformMap = proteoformRetriever.getProteoforms(canonicalAccession);
 		}
 		if (usePhosphosite) {
 			mergeMaps(proteoformMap,
 					ProteoformDBIndexUtil.getInstance().loadProteoformMapFromPhosphoSite(phosphositeDB, protAccession));
 		}
 		// get proteoforms for the protein
-		final List<Proteoform> proteoforms = proteoformMap.get(protAccession);
+
+		final List<Proteoform> proteoforms = proteoformMap.get(canonicalAccession);
 		// separate isoforms from others
 		// others here
 		final List<Proteoform> isoformProteoforms = ProteoformUtil.getProteoformsAs(ProteoformType.ISOFORM,
@@ -115,7 +121,7 @@ public class ProteoformDBIndexer extends DBIndexer {
 		final List<Proteoform> nonIsoformProteoforms = ProteoformUtil
 				.getProteoformsDifferentThan(ProteoformType.ISOFORM, proteoforms);
 
-		final Map<Integer, List<Proteoform>> nonIsoformsProteoformsByPositionInMainProtein = ProteoformDBIndexUtil
+		final TIntObjectHashMap<List<Proteoform>> nonIsoformsProteoformsByPositionInMainProtein = ProteoformDBIndexUtil
 				.getInstance().getProteoformsByPositionInProtein(nonIsoformProteoforms);
 
 		for (int i = 0; i < isoformProteoforms.size() + 1; i++) {
@@ -133,19 +139,20 @@ public class ProteoformDBIndexer extends DBIndexer {
 			// which is when we apply all the nonIsoforms to the main
 			// protein entry
 
-			Protein[] peptides;
+			List<String> peptides;
 			if (isoform == null) {
-				peptides = new Protein[canonicalProteinPeptides.length];
-				System.arraycopy(canonicalProteinPeptides, 0, peptides, 0, canonicalProteinPeptides.length);
+				peptides = new ArrayList<String>();
+				peptides.addAll(canonicalProteinPeptides);
 			} else {
 				// digest isoform sequence
-				peptides = enzyme.cleave(new Protein(new AASequenceImpl(proteinSequence)), MIN_PEPTIDE_LENGHT,
-						MAX_PEPTIDE_LENGTH);
+				peptides = getEnzyme().cleave(proteinSequence, MIN_PEPTIDE_LENGHT, MAX_PEPTIDE_LENGTH);
 			}
 
 			final Set<String> peptideKeys = new HashSet<String>();
-			for (final Protein peptide : peptides) {
-				final String peptideSequence = peptide.getSequence().getSequence();
+			for (final String peptideSequence : peptides) {
+				if (peptideSequence.equals("YFDRDDVALKNF")) {
+					System.out.println(peptideSequence);
+				}
 				// at least one of this AAs has to be in the sequence:
 				final char[] mandatoryInternalAAs = sparam.getMandatoryInternalAAs();
 
@@ -164,7 +171,7 @@ public class ProteoformDBIndexer extends DBIndexer {
 									nonIsoformsProteoformsByPositionInMainProtein, isoform);
 					final Set<SequenceWithModification> modifiedPeptides = ProteoformDBIndexUtil.getInstance()
 							.getAllCombinationsForPeptide(peptideSequence, proteinSequence,
-									proteinSequence.indexOf(peptideSequence) + 1, enzyme, sequenceChanges,
+									proteinSequence.indexOf(peptideSequence) + 1, getEnzyme(), sequenceChanges,
 									maxNumVariationsPerPeptide, extendedAssignMass);
 
 					for (final SequenceWithModification modifiedPeptide : modifiedPeptides) {
@@ -270,17 +277,16 @@ public class ProteoformDBIndexer extends DBIndexer {
 
 	}
 
-	private Protein[] digestProtein(String canonicalProtSeq) {
-		final Enzyme enzyme = getEnzyme();
-		final Protein protein = new Protein(new AASequenceImpl(canonicalProtSeq));
-		final Protein[] peptides = enzyme.cleave(protein, MIN_PEPTIDE_LENGHT, MAX_PEPTIDE_LENGTH);
+	private List<String> digestProtein(String sequence) {
+		final List<String> peptides = getEnzyme().cleave(sequence, MIN_PEPTIDE_LENGHT, MAX_PEPTIDE_LENGTH);
 		return peptides;
 	}
 
-	private Enzyme getEnzyme() {
+	private MyEnzyme getEnzyme() {
 		if (enzyme == null) {
-			enzyme = new Enzyme(null, sparam.getEnzymeResidues(), sparam.getEnzymeNocutResidues(), "Cterm",
+			enzyme = new MyEnzyme(null, sparam.getEnzymeResidues(), sparam.getEnzymeNocutResidues(), "Cterm",
 					sparam.getMaxMissedCleavages());
+			enzyme.setCacheEnabled(true);
 		}
 		return enzyme;
 	}
@@ -304,4 +310,10 @@ public class ProteoformDBIndexer extends DBIndexer {
 		}
 		return proteinCache;
 	}
+
+	@Override
+	protected UniprotProteinLocalRetriever getUniprotProteinLocalRetriever() {
+		return uplr;
+	}
+
 }

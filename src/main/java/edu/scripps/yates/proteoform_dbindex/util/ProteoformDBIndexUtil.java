@@ -15,9 +15,6 @@ import org.apache.commons.math3.util.CombinatoricsUtils;
 import org.proteored.miapeapi.psimod.PSIModOBOPlainTextReader;
 
 import com.compomics.util.general.UnknownElementMassException;
-import com.compomics.util.protein.AASequenceImpl;
-import com.compomics.util.protein.Enzyme;
-import com.compomics.util.protein.Protein;
 
 import edu.scripps.yates.annotations.uniprot.UniprotCVTermCode;
 import edu.scripps.yates.annotations.uniprot.UniprotPTMCVReader;
@@ -32,7 +29,14 @@ import edu.scripps.yates.proteoform_dbindex.model.PhosphositeDB;
 import edu.scripps.yates.proteoform_dbindex.model.SequenceChange;
 import edu.scripps.yates.proteoform_dbindex.model.SequenceWithModification;
 import edu.scripps.yates.utilities.masses.FormulaCalculator;
+import edu.scripps.yates.utilities.sequence.MyEnzyme;
 import edu.scripps.yates.utilities.strings.StringUtils;
+import gnu.trove.iterator.TDoubleIterator;
+import gnu.trove.list.array.TDoubleArrayList;
+import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.map.hash.THashMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.set.hash.THashSet;
 
 public class ProteoformDBIndexUtil {
 	private final static String MISSING_AT = "_missing_at_";
@@ -109,10 +113,10 @@ public class ProteoformDBIndexUtil {
 		throw new IllegalArgumentException();
 	}
 
-	private List<Double> getProteoformPTMMassChanges(int proteoformPositionInProtein, Proteoform proteoform)
+	private TDoubleArrayList getProteoformPTMMassChanges(int proteoformPositionInProtein, Proteoform proteoform)
 			throws UnknownElementMassException {
 		if (proteoform.getPtms() != null && !proteoform.getPtms().isEmpty()) {
-			final List<Double> ret = new ArrayList<Double>();
+			final TDoubleArrayList ret = new TDoubleArrayList();
 			for (final UniprotPTM uniprotPTM : proteoform.getPtms()) {
 				if (uniprotPTM.getPositionInProtein() == proteoformPositionInProtein) {
 					final Double massChange = getMassChange(uniprotPTM);
@@ -163,14 +167,14 @@ public class ProteoformDBIndexUtil {
 
 	public Map<String, List<Proteoform>> loadProteoformMapFromPhosphoSite(PhosphositeDB phosphositeDB,
 			String accession) {
-		final Map<String, List<Proteoform>> ret = new HashMap<String, List<Proteoform>>();
-		final List<Integer> phosphorilatedPositions = phosphositeDB.getPhosphorilatedPositions(accession);
+		final Map<String, List<Proteoform>> ret = new THashMap<String, List<Proteoform>>();
+		final TIntArrayList phosphorilatedPositions = phosphositeDB.getPhosphorilatedPositions(accession);
 		if (phosphorilatedPositions != null) {
 			final List<Proteoform> list = new ArrayList<Proteoform>();
 			ret.put(accession, list);
 			final String proteinSeq = phosphositeDB.getProteinSeq(accession);
 
-			for (final Integer position : phosphorilatedPositions) {
+			for (final int position : phosphorilatedPositions.toArray()) {
 				final char aa = proteinSeq.charAt(position - 1);
 				final Proteoform proteoform = new Proteoform(accession, proteinSeq, accession, proteinSeq,
 						"Phospho(" + aa + ")_at_" + position, null, null, ProteoformType.PTM, true);
@@ -199,8 +203,8 @@ public class ProteoformDBIndexUtil {
 		return null;
 	}
 
-	public Map<Integer, List<Proteoform>> getProteoformsByPositionInProtein(List<Proteoform> proteoforms) {
-		final Map<Integer, List<Proteoform>> proteoformsByPositionInProtein = new HashMap<Integer, List<Proteoform>>();
+	public TIntObjectHashMap<List<Proteoform>> getProteoformsByPositionInProtein(List<Proteoform> proteoforms) {
+		final TIntObjectHashMap<List<Proteoform>> proteoformsByPositionInProtein = new TIntObjectHashMap<List<Proteoform>>();
 		for (final Proteoform proteoform : proteoforms) {
 			// ignore mutagenesis, because they are artificial mutations
 			if (proteoform.getProteoformType() == ProteoformType.MUTAGENESIS_SITE) {
@@ -250,20 +254,21 @@ public class ProteoformDBIndexUtil {
 	 * 
 	 * @param peptideSeq
 	 * @param peptideInitInProtein
-	 * @param proteoformsByPositionInMainProtein
+	 * @param nonIsoformsProteoformsByPositionInMainProtein
 	 * @param isoform
 	 *            can be null
 	 * @return
 	 * @throws UnknownElementMassException
 	 */
 	public List<SequenceChange> getSequenceChangesInPeptide(String peptideSeq, int peptideInitInProtein,
-			Map<Integer, List<Proteoform>> proteoformsByPositionInMainProtein, Proteoform isoform)
+			TIntObjectHashMap<List<Proteoform>> nonIsoformsProteoformsByPositionInMainProtein, Proteoform isoform)
 			throws UnknownElementMassException {
 		if (isoform == null) {
 			return getSequenceChangesInPeptideTowardsMainProteinform(peptideSeq, peptideInitInProtein,
-					proteoformsByPositionInMainProtein);
+					nonIsoformsProteoformsByPositionInMainProtein);
 		} else {
-			return getSequenceChangesInPeptideTowardsIsoform(peptideSeq, proteoformsByPositionInMainProtein, isoform);
+			return getSequenceChangesInPeptideTowardsIsoform(peptideSeq, nonIsoformsProteoformsByPositionInMainProtein,
+					isoform);
 		}
 	}
 
@@ -278,12 +283,13 @@ public class ProteoformDBIndexUtil {
 	 * @throws UnknownElementMassException
 	 */
 	private List<SequenceChange> getSequenceChangesInPeptideTowardsMainProteinform(String peptideSeq,
-			int peptideInitInOriginalProtein, Map<Integer, List<Proteoform>> proteoformsByPositionInProtein)
+			int peptideInitInOriginalProtein, TIntObjectHashMap<List<Proteoform>> proteoformsByPositionInProtein)
 			throws UnknownElementMassException {
 		final List<SequenceChange> ret = new ArrayList<SequenceChange>();
 
 		final List<Integer> positionsInOrder = new ArrayList<Integer>();
-		positionsInOrder.addAll(proteoformsByPositionInProtein.keySet());
+		proteoformsByPositionInProtein.forEachKey(k -> positionsInOrder.add(k));
+
 		Collections.sort(positionsInOrder);
 		final int peptideLength = peptideSeq.length();
 		final int peptideEndInProtein = peptideInitInOriginalProtein + peptideLength - 1;
@@ -308,23 +314,19 @@ public class ProteoformDBIndexUtil {
 						// the change is out of the peptide
 						continue;
 					}
-					final List<Double> massChanges = getProteoformPTMMassChanges(proteoformPositionInProtein,
+					final TDoubleArrayList massChanges = getProteoformPTMMassChanges(proteoformPositionInProtein,
 							proteoform);
 					final String change = getProteoformSequenceChange(proteoform);
 
 					if (massChanges != null) {
-						for (final Double massChange : massChanges) {
+						final TDoubleIterator iterator = massChanges.iterator();
+						while (iterator.hasNext()) {
+							final Double massChange = iterator.next();
 							final SequenceChange seqChange = new SequenceChange(proteoform.getId(), ProteoformType.PTM,
 									positionInPeptide, original, change, massChange);
 							ret.add(seqChange);
 						}
 					} else {
-						if (peptideSeq.equals("MEEPQSDPSVEPPLSQETFSDLWK")) {
-							if (proteoform.getId().equals("P04637_VAR_044545_P->S_at_8")) {
-								System.out.println("ASDF");
-							}
-						}
-
 						final SequenceChange seqChange = new SequenceChange(proteoform.getId(),
 								proteoform.getProteoformType(), positionInPeptide, original, change, null);
 						ret.add(seqChange);
@@ -350,12 +352,13 @@ public class ProteoformDBIndexUtil {
 	 * @throws UnknownElementMassException
 	 */
 	private List<SequenceChange> getSequenceChangesInPeptideTowardsIsoform(String isoformPeptideSeq,
-			Map<Integer, List<Proteoform>> proteoformsByPositionInMainProtein, Proteoform isoform)
+			TIntObjectHashMap<List<Proteoform>> proteoformsByPositionInMainProtein, Proteoform isoform)
 			throws UnknownElementMassException {
 		final List<SequenceChange> ret = new ArrayList<SequenceChange>();
 
 		final List<Integer> positionsInOrder = new ArrayList<Integer>();
-		positionsInOrder.addAll(proteoformsByPositionInMainProtein.keySet());
+		proteoformsByPositionInMainProtein.forEachKey(k -> positionsInOrder.add(k));
+
 		Collections.sort(positionsInOrder);
 		for (final Integer proteoformPositionInMainProtein : positionsInOrder) {
 			final List<Proteoform> proteoformsToApply = proteoformsByPositionInMainProtein
@@ -385,13 +388,15 @@ public class ProteoformDBIndexUtil {
 							// the change is out of the peptide
 							continue;
 						}
-						final List<Double> massChanges = getProteoformPTMMassChanges(proteoformPositionInMainProtein,
-								proteoformToApply);
+						final TDoubleArrayList massChanges = getProteoformPTMMassChanges(
+								proteoformPositionInMainProtein, proteoformToApply);
 
 						final String change = getProteoformSequenceChange(proteoformToApply);
 
 						if (massChanges != null) {
-							for (final Double massChange : massChanges) {
+							final TDoubleIterator iterator = massChanges.iterator();
+							while (iterator.hasNext()) {
+								final Double massChange = iterator.next();
 								final SequenceChange seqChange = new SequenceChange(isoform.getId(), ProteoformType.PTM,
 										positionInPeptide, original, change, massChange);
 								ret.add(seqChange);
@@ -415,13 +420,13 @@ public class ProteoformDBIndexUtil {
 	}
 
 	public Set<SequenceWithModification> getAllCombinationsForPeptide(String peptideSeq, String proteinSequence,
-			int positionOfPeptideInProtein, Enzyme enzyme, List<SequenceChange> sequenceChanges,
+			int positionOfPeptideInProtein, MyEnzyme enzyme, List<SequenceChange> sequenceChanges,
 			int maxNumVariationsPerPeptide, ExtendedAssignMass extendedAssignMass) throws IOException {
 		staticCallDepp++;
 		if (staticCallDepp > 4) {
 			System.out.println("asdf");
 		}
-		final Set<SequenceWithModification> ret = new HashSet<SequenceWithModification>();
+		final Set<SequenceWithModification> ret = new THashSet<SequenceWithModification>();
 		final List<SequenceChange> sequenceChangesNaturalVariants = sequenceChanges.stream()
 				.filter(s -> s.getProteoformType() == ProteoformType.NATURAL_VARIANT).collect(Collectors.toList());
 		final List<SequenceChange> sequenceChangesOthers = sequenceChanges.stream()
@@ -474,7 +479,7 @@ public class ProteoformDBIndexUtil {
 								listOfSequenceChangesToApply, positionOfPeptideInProtein - 1, indexes,
 								extendedAssignMass, proteinSequence);
 						final String newProteinSequence = modifiedProteinSequence.getSequenceAfterModification();
-						final Protein[] cleaves = enzyme.cleave(new Protein(new AASequenceImpl(newProteinSequence)),
+						final List<String> cleaves = enzyme.cleave(newProteinSequence,
 								ProteoformDBIndexer.MIN_PEPTIDE_LENGHT, ProteoformDBIndexer.MAX_PEPTIDE_LENGTH);
 						// then check if one of the cleavage products is this
 						// peptide
@@ -483,11 +488,10 @@ public class ProteoformDBIndexUtil {
 						} else {
 							// if it is not valid, take peptides starting with
 							// the original peptide sequence:
-							final List<Protein> newPeptides = getCleavageProductsStartingWithPeptide(
+							final List<String> newPeptides = getCleavageProductsStartingWithPeptide(
 									sequenceChanged.getSequenceAfterModification(), cleaves);
 							// and for each of them, apply all the variations
-							for (final Protein newPeptide : newPeptides) {
-								final String newPeptideSequence = newPeptide.getSequence().getSequence();
+							for (final String newPeptideSequence : newPeptides) {
 								final String newPeptideSequenceOriginal = getOriginalPeptideSequence(
 										sequenceChanged.getSequenceWithModification(), newPeptideSequence);
 								if (newPeptideSequenceOriginal.equals(peptideSeq)) {
@@ -518,7 +522,7 @@ public class ProteoformDBIndexUtil {
 
 	}
 
-	private int getNumMissedClavages(String peptideSeq, Enzyme enzyme) {
+	private int getNumMissedClavages(String peptideSeq, MyEnzyme enzyme) {
 		int numMissedClavages = 0;
 		// loop until the second last AA (we dont count the last one) to be a
 		// missedclavage
@@ -585,19 +589,19 @@ public class ProteoformDBIndexUtil {
 		System.out.println(getOriginalPeptideSequence("ABCD[R->C]", "ABCDCEFGK"));
 	}
 
-	private List<Protein> getCleavageProductsStartingWithPeptide(String peptideSeq, Protein[] cleaves) {
-		final List<Protein> ret = new ArrayList<Protein>();
-		for (final Protein cleavageProduct : cleaves) {
-			if (cleavageProduct.getSequence().getSequence().startsWith(peptideSeq)) {
+	private List<String> getCleavageProductsStartingWithPeptide(String peptideSeq, List<String> cleaves) {
+		final List<String> ret = new ArrayList<String>();
+		for (final String cleavageProduct : cleaves) {
+			if (cleavageProduct.startsWith(peptideSeq)) {
 				ret.add(cleavageProduct);
 			}
 		}
 		return ret;
 	}
 
-	private boolean peptideIsInCleavagesProducts(String peptide, Protein[] cleaves) {
-		for (final Protein cleavageProduct : cleaves) {
-			if (cleavageProduct.getSequence().getSequence().equals(peptide)) {
+	private boolean peptideIsInCleavagesProducts(String peptide, List<String> cleaves) {
+		for (final String cleavageProduct : cleaves) {
+			if (cleavageProduct.equals(peptide)) {
 				return true;
 			}
 		}

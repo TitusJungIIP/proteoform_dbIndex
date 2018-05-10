@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.scripps.yates.dbindex.DynByteBuffer;
+import edu.scripps.yates.utilities.bytes.DynByteBuffer;
 
 public class PTM {
 	private final byte posInPeptide;

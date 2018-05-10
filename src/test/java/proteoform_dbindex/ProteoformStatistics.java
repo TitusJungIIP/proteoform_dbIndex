@@ -44,6 +44,7 @@ import edu.scripps.yates.utilities.masses.FormulaCalculator;
 import edu.scripps.yates.utilities.maths.Maths;
 import edu.scripps.yates.utilities.progresscounter.ProgressCounter;
 import edu.scripps.yates.utilities.progresscounter.ProgressPrintingType;
+import gnu.trove.list.array.TIntArrayList;
 
 public class ProteoformStatistics {
 
@@ -95,9 +96,9 @@ public class ProteoformStatistics {
 			final Set<String> uniquePeptidesWithNoVariationsTotal = new HashSet<String>();
 			final ProgressCounter proteinCounter = new ProgressCounter(loader.countNumberOfEntries(),
 					ProgressPrintingType.PERCENTAGE_STEPS, 0);
-			final List<Integer> numberOfPeptidesWithNoVariationsPerProtein = new ArrayList<Integer>();
-			final List<Integer> numberOfVariationsPerPeptide = new ArrayList<Integer>();
-			final List<Integer> numberOfPeptidesWithVariationsPerProtein = new ArrayList<Integer>();
+			final TIntArrayList numberOfPeptidesWithNoVariationsPerProtein = new TIntArrayList();
+			final TIntArrayList numberOfVariationsPerPeptide = new TIntArrayList();
+			final TIntArrayList numberOfPeptidesWithVariationsPerProtein = new TIntArrayList();
 			while ((protein = loader.nextProtein()) != null) {
 				final Set<String> uniquePeptidesWithVariationsInProtein = new HashSet<String>();
 				final Set<String> uniquePeptidesWithNoVariationsInProtein = new HashSet<String>();
@@ -231,12 +232,9 @@ public class ProteoformStatistics {
 					uniquePeptidesWithNoVariationsTotal.size() + " different peptides (no counting variations)\n");
 			result.append(uniquePeptidesWithVariationsTotal.size() + " unique peptides counting variations\n");
 
-			final double avgNumberOfPeptidesPerProtein = Maths
-					.mean(numberOfPeptidesWithNoVariationsPerProtein.toArray(new Integer[0]));
-			final double avgNumberOfVariationPeptidesPerPeptide = Maths
-					.mean(numberOfVariationsPerPeptide.toArray(new Integer[0]));
-			final double avgNumberOfVariationPeptidesPerProtein = Maths
-					.mean(numberOfPeptidesWithVariationsPerProtein.toArray(new Integer[0]));
+			final double avgNumberOfPeptidesPerProtein = Maths.mean(numberOfPeptidesWithNoVariationsPerProtein);
+			final double avgNumberOfVariationPeptidesPerPeptide = Maths.mean(numberOfVariationsPerPeptide);
+			final double avgNumberOfVariationPeptidesPerProtein = Maths.mean(numberOfPeptidesWithVariationsPerProtein);
 			result.append("Avg number of peptides per protein " + avgNumberOfPeptidesPerProtein + "\n");
 			result.append(
 					"Avg number of peptide variations per peptide " + avgNumberOfVariationPeptidesPerPeptide + "\n");
@@ -267,13 +265,13 @@ public class ProteoformStatistics {
 
 	private Map<String, List<Proteoform>> loadProteoformMapFromPhosphosite(String accession) {
 		final Map<String, List<Proteoform>> ret = new HashMap<String, List<Proteoform>>();
-		final List<Integer> phosphorilatedPositions = phosphositeDB.getPhosphorilatedPositions(accession);
+		final TIntArrayList phosphorilatedPositions = phosphositeDB.getPhosphorilatedPositions(accession);
 		if (phosphorilatedPositions != null) {
 			final List<Proteoform> list = new ArrayList<Proteoform>();
 			ret.put(accession, list);
 			final String proteinSeq = phosphositeDB.getProteinSeq(accession);
 
-			for (final Integer position : phosphorilatedPositions) {
+			for (final int position : phosphorilatedPositions.toArray()) {
 				final char aa = proteinSeq.charAt(position - 1);
 				final Proteoform proteoform = new Proteoform(accession, proteinSeq, accession, proteinSeq,
 						"Phospho(" + aa + ")_at_" + position, null, null, ProteoformType.PTM, true);

@@ -11,7 +11,6 @@ import java.util.Map;
 import edu.scripps.yates.dbindex.Constants;
 import edu.scripps.yates.dbindex.DBIndexStoreException;
 import edu.scripps.yates.dbindex.DBIndexStoreSQLiteByteIndexMerge;
-import edu.scripps.yates.dbindex.DynByteBuffer;
 import edu.scripps.yates.dbindex.IndexedSequence;
 import edu.scripps.yates.dbindex.io.DBIndexSearchParams;
 import edu.scripps.yates.proteoform_dbindex.model.ExtendedAssignMass;
@@ -20,6 +19,7 @@ import edu.scripps.yates.proteoform_dbindex.model.IndexedSeqMergedWithPtms;
 import edu.scripps.yates.proteoform_dbindex.model.IndexedSequenceWithPTMs;
 import edu.scripps.yates.proteoform_dbindex.model.PTM;
 import edu.scripps.yates.proteoform_dbindex.util.ByteArrayUtil;
+import edu.scripps.yates.utilities.bytes.DynByteBuffer;
 import gnu.trove.map.hash.THashMap;
 
 public class ProteoformDBIndexStoreSQLiteByteIndexMerge extends DBIndexStoreSQLiteByteIndexMerge {
@@ -269,9 +269,6 @@ public class ProteoformDBIndexStoreSQLiteByteIndexMerge extends DBIndexStoreSQLi
 			throw new DBIndexStoreException("Indexer is not initialized");
 		}
 		try {
-			if (sequence.contains("MEEPQSD[P->S]SVEPPLSQETFSDLWK")) {
-				logger.info(sequence);
-			}
 			totalSeqCount++;
 			final List<PTM> ptms = PTM.extractPTMsFromSequence(sequence, extendedAssignMass);
 			updateCachedData(precMass, (short) seqOffset, (short) seqLength, (int) proteinId, ptms);
@@ -307,9 +304,6 @@ public class ProteoformDBIndexStoreSQLiteByteIndexMerge extends DBIndexStoreSQLi
 		// changed by Salva 11Nov2014, using the value on IndexUtil
 		final int rowId = (int) (precMass * sparam.getMassGroupFactor());
 
-		if (rowId == 27762658) {
-			logger.info(precMass);
-		}
 		// change by Salva 21Nov2014
 		// DynByteBuffer byteBuffer = data[rowId];
 		DynByteBuffer byteBuffer = dataMap.get(rowId);
@@ -336,5 +330,13 @@ public class ProteoformDBIndexStoreSQLiteByteIndexMerge extends DBIndexStoreSQLi
 				}
 			}
 		}
+	}
+
+	@Override
+	public void stopAddSeq() throws DBIndexStoreException {
+		if (proteinCache instanceof ProteoformProteinCache) {
+			((ProteoformProteinCache) proteinCache).writeBuffer();
+		}
+		super.stopAddSeq();
 	}
 }
