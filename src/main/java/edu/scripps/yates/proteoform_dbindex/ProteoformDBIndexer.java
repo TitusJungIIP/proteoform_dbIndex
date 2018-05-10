@@ -16,12 +16,11 @@ import edu.scripps.yates.annotations.uniprot.proteoform.Proteoform;
 import edu.scripps.yates.annotations.uniprot.proteoform.ProteoformType;
 import edu.scripps.yates.annotations.uniprot.proteoform.ProteoformUtil;
 import edu.scripps.yates.annotations.uniprot.proteoform.xml.UniprotProteoformRetrieverFromXML;
-import edu.scripps.yates.dbindex.DBIndexStore.FilterResult;
 import edu.scripps.yates.dbindex.Constants;
+import edu.scripps.yates.dbindex.DBIndexStore.FilterResult;
 import edu.scripps.yates.dbindex.DBIndexStoreException;
 import edu.scripps.yates.dbindex.DBIndexer;
 import edu.scripps.yates.dbindex.ProteinCache;
-import edu.scripps.yates.dbindex.model.AssignMassToStaticParam;
 import edu.scripps.yates.dbindex.model.DBIndexSearchParams;
 import edu.scripps.yates.proteoform_dbindex.model.ExtendedAssignMass;
 import edu.scripps.yates.proteoform_dbindex.model.PTMCodeObj;
@@ -30,6 +29,7 @@ import edu.scripps.yates.proteoform_dbindex.model.SequenceChange;
 import edu.scripps.yates.proteoform_dbindex.model.SequenceWithModification;
 import edu.scripps.yates.proteoform_dbindex.util.ProteoformDBIndexUtil;
 import edu.scripps.yates.utilities.fasta.FastaParser;
+import edu.scripps.yates.utilities.masses.AssignMass;
 import edu.scripps.yates.utilities.sequence.MyEnzyme;
 import gnu.trove.map.hash.TIntObjectHashMap;
 
@@ -194,9 +194,9 @@ public class ProteoformDBIndexer extends DBIndexer {
 						// Salva added 24Nov2014
 						double precMass = 0.0;
 						if (sparam.isH2OPlusProtonAdded())
-							precMass += AssignMassToStaticParam.H2O_PROTON;
-						precMass += AssignMassToStaticParam.getcTerm();
-						precMass += AssignMassToStaticParam.getnTerm();
+							precMass += AssignMass.H2O_PROTON;
+						precMass += AssignMass.getcTerm();
+						precMass += AssignMass.getnTerm();
 						// CALCULATE MASS
 						precMass += modifiedPeptide.getSequenceMassAfterModification();
 

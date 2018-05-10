@@ -17,11 +17,11 @@ import edu.scripps.yates.dbindex.DBIndexInterface;
 import edu.scripps.yates.dbindex.IndexedProtein;
 import edu.scripps.yates.dbindex.IndexedSequence;
 import edu.scripps.yates.dbindex.io.DBIndexSearchParamsImpl;
-import edu.scripps.yates.dbindex.model.AssignMassToStaticParam;
 import edu.scripps.yates.dbindex.model.DBIndexSearchParams;
 import edu.scripps.yates.dbindex.util.IndexUtil;
 import edu.scripps.yates.proteoform_dbindex.ProteoformDBIndexInterface;
 import edu.scripps.yates.proteoform_dbindex.model.ExtendedAssignMass;
+import edu.scripps.yates.utilities.masses.AssignMass;
 
 public class Tests {
 
@@ -100,7 +100,7 @@ public class Tests {
 			System.out.println("Peptide with mass close to " + calculateMass + "\t" + indexedSequence.getSequence()
 					+ "\t" + indexedSequence.getMass());
 			double x = ExtendedAssignMass.getInstance(true, null).calculateMass(indexedSequence.getSequence());
-			x += AssignMassToStaticParam.H2O_PROTON;
+			x += AssignMass.H2O_PROTON;
 			System.out.println(x + "\tvs\t" + indexedSequence.getMass());
 
 		}
@@ -110,7 +110,7 @@ public class Tests {
 			System.out.println("Peptide with mass close to " + precursorMass + "\t" + indexedSequence.getSequence()
 					+ "\t" + indexedSequence.getMass());
 			double x = ExtendedAssignMass.getInstance(true, null).calculateMass(indexedSequence.getSequence());
-			x += AssignMassToStaticParam.H2O_PROTON;
+			x += AssignMass.H2O_PROTON;
 			System.out.println(x + "\tvs\t" + indexedSequence.getMass());
 		}
 
@@ -118,14 +118,14 @@ public class Tests {
 
 	@Before
 	public void before() {
-		new AssignMassToStaticParam(true);
+		new AssignMass(true);
 	}
 
 	@Test
 	public void test() {
-		System.out.println(AssignMassToStaticParam.NH3);
-		System.out.println(AssignMassToStaticParam.H2O);
-		System.out.println(AssignMassToStaticParam.CO);
+		System.out.println(AssignMass.NH3);
+		System.out.println(AssignMass.H2O);
+		System.out.println(AssignMass.CO);
 
 	}
 

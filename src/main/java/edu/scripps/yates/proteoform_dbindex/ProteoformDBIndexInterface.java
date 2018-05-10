@@ -11,8 +11,8 @@ import edu.scripps.yates.dbindex.DBIndexer.IndexerMode;
 import edu.scripps.yates.dbindex.DBIndexerException;
 import edu.scripps.yates.dbindex.SearchParams;
 import edu.scripps.yates.dbindex.io.SearchParamReader;
-import edu.scripps.yates.dbindex.model.AssignMassToStaticParam;
 import edu.scripps.yates.dbindex.model.DBIndexSearchParams;
+import edu.scripps.yates.utilities.masses.AssignMass;
 
 public class ProteoformDBIndexInterface extends DBIndexInterface {
 	private final static Logger log = Logger.getLogger(ProteoformDBIndexInterface.class);
@@ -70,7 +70,7 @@ public class ProteoformDBIndexInterface extends DBIndexInterface {
 		try {
 
 			// init the masses
-			AssignMassToStaticParam.getInstance(sParam.isUseMonoParent());
+			AssignMass.getInstance(sParam.isUseMonoParent());
 			final edu.scripps.yates.dbindex.DBIndexer.IndexerMode indexerMode = sParam.isUseIndex()
 					? IndexerMode.SEARCH_INDEXED : IndexerMode.SEARCH_UNINDEXED;
 			indexer = new ProteoformDBIndexer(sParam, indexerMode, useUniprot, usePhosphosite, uniprotVersion, uplr,
