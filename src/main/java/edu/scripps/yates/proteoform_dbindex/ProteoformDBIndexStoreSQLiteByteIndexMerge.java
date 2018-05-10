@@ -12,7 +12,7 @@ import edu.scripps.yates.dbindex.Constants;
 import edu.scripps.yates.dbindex.DBIndexStoreException;
 import edu.scripps.yates.dbindex.DBIndexStoreSQLiteByteIndexMerge;
 import edu.scripps.yates.dbindex.IndexedSequence;
-import edu.scripps.yates.dbindex.io.DBIndexSearchParams;
+import edu.scripps.yates.dbindex.model.DBIndexSearchParams;
 import edu.scripps.yates.proteoform_dbindex.model.ExtendedAssignMass;
 import edu.scripps.yates.proteoform_dbindex.model.IndexedSeqInternalWithPtms;
 import edu.scripps.yates.proteoform_dbindex.model.IndexedSeqMergedWithPtms;

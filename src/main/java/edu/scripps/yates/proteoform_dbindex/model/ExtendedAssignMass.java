@@ -14,9 +14,9 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import edu.scripps.yates.dbindex.model.AssignMass;
+import edu.scripps.yates.dbindex.model.AssignMassToStaticParam;
 
-public class ExtendedAssignMass extends AssignMass {
+public class ExtendedAssignMass extends AssignMassToStaticParam {
 	private final static Logger log = Logger.getLogger(ExtendedAssignMass.class);
 	private final static Charset CHARSET = StandardCharsets.UTF_8;
 
@@ -138,7 +138,7 @@ public class ExtendedAssignMass extends AssignMass {
 					change.append(aa);
 				}
 			} else if (isAA(aa)) {
-				mass += AssignMass.getMass(aa);
+				mass += AssignMassToStaticParam.getMass(aa);
 			} else {
 				if (aa == '[') {
 					change = new StringBuilder();

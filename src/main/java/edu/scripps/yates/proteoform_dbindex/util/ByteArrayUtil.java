@@ -6,8 +6,8 @@ import java.util.List;
 
 import edu.scripps.yates.dbindex.DBIndexStoreException;
 import edu.scripps.yates.dbindex.DBIndexStoreSQLiteByteIndexMerge;
-import edu.scripps.yates.dbindex.ResidueInfo;
 import edu.scripps.yates.dbindex.Util;
+import edu.scripps.yates.dbindex.model.ResidueInfo;
 import edu.scripps.yates.proteoform_dbindex.ProteoformProteinCache;
 import edu.scripps.yates.proteoform_dbindex.model.IndexedSeqInternalWithPtms;
 import edu.scripps.yates.proteoform_dbindex.model.IndexedSequenceWithPTMs;

@@ -3,8 +3,8 @@ package edu.scripps.yates.proteoform_dbindex;
 import java.io.File;
 
 import edu.scripps.yates.dbindex.DBIndexInterface;
-import edu.scripps.yates.dbindex.io.DBIndexSearchParams;
 import edu.scripps.yates.dbindex.io.DBIndexSearchParamsImpl;
+import edu.scripps.yates.dbindex.model.DBIndexSearchParams;
 
 public class ProteoformDBIndex {
 	public ProteoformDBIndex(File fastaFile, char[] enzymeArray, int missedCleavages, boolean semicleavage,

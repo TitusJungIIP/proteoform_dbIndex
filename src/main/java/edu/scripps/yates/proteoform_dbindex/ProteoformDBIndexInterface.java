@@ -9,10 +9,10 @@ import edu.scripps.yates.annotations.uniprot.UniprotProteinLocalRetriever;
 import edu.scripps.yates.dbindex.DBIndexInterface;
 import edu.scripps.yates.dbindex.DBIndexer.IndexerMode;
 import edu.scripps.yates.dbindex.DBIndexerException;
-import edu.scripps.yates.dbindex.io.DBIndexSearchParams;
+import edu.scripps.yates.dbindex.SearchParams;
 import edu.scripps.yates.dbindex.io.SearchParamReader;
-import edu.scripps.yates.dbindex.io.SearchParams;
-import edu.scripps.yates.dbindex.model.AssignMass;
+import edu.scripps.yates.dbindex.model.AssignMassToStaticParam;
+import edu.scripps.yates.dbindex.model.DBIndexSearchParams;
 
 public class ProteoformDBIndexInterface extends DBIndexInterface {
 	private final static Logger log = Logger.getLogger(ProteoformDBIndexInterface.class);
@@ -70,7 +70,7 @@ public class ProteoformDBIndexInterface extends DBIndexInterface {
 		try {
 
 			// init the masses
-			AssignMass.getInstance(sParam.isUseMonoParent());
+			AssignMassToStaticParam.getInstance(sParam.isUseMonoParent());
 			final edu.scripps.yates.dbindex.DBIndexer.IndexerMode indexerMode = sParam.isUseIndex()
 					? IndexerMode.SEARCH_INDEXED : IndexerMode.SEARCH_UNINDEXED;
 			indexer = new ProteoformDBIndexer(sParam, indexerMode, useUniprot, usePhosphosite, uniprotVersion, uplr,

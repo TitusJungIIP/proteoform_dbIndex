@@ -5,7 +5,7 @@ import java.io.File;
 import edu.scripps.yates.dbindex.Constants;
 import edu.scripps.yates.dbindex.DBIndexStoreException;
 import edu.scripps.yates.dbindex.DBIndexStoreSQLiteMult;
-import edu.scripps.yates.dbindex.io.DBIndexSearchParams;
+import edu.scripps.yates.dbindex.model.DBIndexSearchParams;
 import edu.scripps.yates.proteoform_dbindex.model.ExtendedAssignMass;
 
 public class ProteoformDBIndexStoreSQLiteMult extends DBIndexStoreSQLiteMult {

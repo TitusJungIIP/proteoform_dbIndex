@@ -16,13 +16,13 @@ import edu.scripps.yates.annotations.uniprot.proteoform.Proteoform;
 import edu.scripps.yates.annotations.uniprot.proteoform.ProteoformType;
 import edu.scripps.yates.annotations.uniprot.proteoform.ProteoformUtil;
 import edu.scripps.yates.annotations.uniprot.proteoform.xml.UniprotProteoformRetrieverFromXML;
-import edu.scripps.yates.dbindex.Constants;
 import edu.scripps.yates.dbindex.DBIndexStore.FilterResult;
+import edu.scripps.yates.dbindex.Constants;
 import edu.scripps.yates.dbindex.DBIndexStoreException;
 import edu.scripps.yates.dbindex.DBIndexer;
 import edu.scripps.yates.dbindex.ProteinCache;
-import edu.scripps.yates.dbindex.io.DBIndexSearchParams;
-import edu.scripps.yates.dbindex.model.AssignMass;
+import edu.scripps.yates.dbindex.model.AssignMassToStaticParam;
+import edu.scripps.yates.dbindex.model.DBIndexSearchParams;
 import edu.scripps.yates.proteoform_dbindex.model.ExtendedAssignMass;
 import edu.scripps.yates.proteoform_dbindex.model.PTMCodeObj;
 import edu.scripps.yates.proteoform_dbindex.model.PhosphositeDB;
@@ -194,9 +194,9 @@ public class ProteoformDBIndexer extends DBIndexer {
 						// Salva added 24Nov2014
 						double precMass = 0.0;
 						if (sparam.isH2OPlusProtonAdded())
-							precMass += AssignMass.H2O_PROTON;
-						precMass += AssignMass.getcTerm();
-						precMass += AssignMass.getnTerm();
+							precMass += AssignMassToStaticParam.H2O_PROTON;
+						precMass += AssignMassToStaticParam.getcTerm();
+						precMass += AssignMassToStaticParam.getnTerm();
 						// CALCULATE MASS
 						precMass += modifiedPeptide.getSequenceMassAfterModification();
 
