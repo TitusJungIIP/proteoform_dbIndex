@@ -25,6 +25,7 @@ public class ExtendedAssignMass extends AssignMass {
 	private final File ptmCodesFile;
 	private short shortCounter = 1;
 	private static ExtendedAssignMass instance;
+	private boolean fileExists = false;
 
 	public static ExtendedAssignMass getInstance(boolean useMono, File ptmCodesFile) {
 		if (instance == null) {
@@ -36,6 +37,11 @@ public class ExtendedAssignMass extends AssignMass {
 	private ExtendedAssignMass(boolean useMono, File ptmCodesFile) {
 		super(useMono);
 		this.ptmCodesFile = ptmCodesFile;
+		if (!ptmCodesFile.exists()) {
+			new File(ptmCodesFile.getParent()).mkdirs();
+		} else {
+			fileExists = true;
+		}
 		load();
 	}
 
@@ -50,12 +56,13 @@ public class ExtendedAssignMass extends AssignMass {
 
 	private void write(PTMCodeObj newPTM) throws IOException {
 		OutputStreamWriter out = null;
-		if (!ptmCodesFile.exists()) {
-			new File(ptmCodesFile.getParent()).mkdirs();
+		if (!fileExists) {
 			out = new OutputStreamWriter(new FileOutputStream(ptmCodesFile), CHARSET);
+			fileExists = true;
 		} else {
 			out = new OutputStreamWriter(new FileOutputStream(ptmCodesFile, true), CHARSET);
 		}
+
 		out.write(newPTM.toString() + "\n");
 		out.close();
 	}
