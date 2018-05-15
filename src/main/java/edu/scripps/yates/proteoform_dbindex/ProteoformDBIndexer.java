@@ -3,8 +3,6 @@ package edu.scripps.yates.proteoform_dbindex;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,7 +29,10 @@ import edu.scripps.yates.proteoform_dbindex.util.ProteoformDBIndexUtil;
 import edu.scripps.yates.utilities.fasta.FastaParser;
 import edu.scripps.yates.utilities.masses.AssignMass;
 import edu.scripps.yates.utilities.sequence.MyEnzyme;
+import edu.scripps.yates.utilities.util.Pair;
+import gnu.trove.map.hash.THashMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.set.hash.THashSet;
 
 public class ProteoformDBIndexer extends DBIndexer {
 	private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(ProteoformDBIndexer.class);
@@ -94,19 +95,26 @@ public class ProteoformDBIndexer extends DBIndexer {
 		// clear enzyme cache
 		getEnzyme().clearCache();
 		//
-		final String protAccession = FastaParser.getUniProtACC(proteinFastaHeader);
-		if (protAccession == null) {
-			throw new IllegalArgumentException(
-					"Uniprot accession cannot be extracted from fasta header:  '" + proteinFastaHeader + "'");
+		boolean isUniprot = true;
+		final Pair<String, String> accPair = FastaParser.getACC(proteinFastaHeader);
+		String protAccession = accPair.getFirstelement();
+		String canonicalAccession = null;
+		if (accPair.getSecondElement() == "UNKNOWN") {
+			logger.debug("Uniprot accession cannot be extracted from fasta header:  '" + proteinFastaHeader + "'");
+			isUniprot = false;
+			protAccession = accPair.getFirstelement();
+			canonicalAccession = protAccession;
+		} else {
+			canonicalAccession = FastaParser.getNoIsoformAccession(protAccession);
 		}
-		final String canonicalAccession = FastaParser.getNoIsoformAccession(protAccession);
+
 		final List<String> canonicalProteinPeptides = digestProtein(canonicalProtSeq);
 
-		Map<String, List<Proteoform>> proteoformMap = new HashMap<String, List<Proteoform>>();
-		if (useUniprot) {
+		Map<String, List<Proteoform>> proteoformMap = new THashMap<String, List<Proteoform>>();
+		if (useUniprot && isUniprot) {
 			proteoformMap = proteoformRetriever.getProteoforms(canonicalAccession);
 		}
-		if (usePhosphosite) {
+		if (usePhosphosite && isUniprot) {
 			mergeMaps(proteoformMap,
 					ProteoformDBIndexUtil.getInstance().loadProteoformMapFromPhosphoSite(phosphositeDB, protAccession));
 		}
@@ -124,6 +132,8 @@ public class ProteoformDBIndexer extends DBIndexer {
 		final TIntObjectHashMap<List<Proteoform>> nonIsoformsProteoformsByPositionInMainProtein = ProteoformDBIndexUtil
 				.getInstance().getProteoformsByPositionInProtein(nonIsoformProteoforms);
 
+		// note that here we have the loop until i <
+		// isoformProteoforms.size()+1, to include the canonical
 		for (int i = 0; i < isoformProteoforms.size() + 1; i++) {
 			String proteinSequence = canonicalProtSeq;
 			String proteinAccession = protAccession;
@@ -148,9 +158,9 @@ public class ProteoformDBIndexer extends DBIndexer {
 				peptides = getEnzyme().cleave(proteinSequence, MIN_PEPTIDE_LENGHT, MAX_PEPTIDE_LENGTH);
 			}
 
-			final Set<String> peptideKeys = new HashSet<String>();
+			final Set<String> peptideKeys = new THashSet<String>();
 			for (final String peptideSequence : peptides) {
-				if (peptideSequence.equals("YFDRDDVALKNF")) {
+				if (peptideSequence.equals("MEEPQSDPSVEPPLSQETFSDLWK")) {
 					System.out.println(peptideSequence);
 				}
 				// at least one of this AAs has to be in the sequence:
@@ -175,7 +185,6 @@ public class ProteoformDBIndexer extends DBIndexer {
 									maxNumVariationsPerPeptide, extendedAssignMass);
 
 					for (final SequenceWithModification modifiedPeptide : modifiedPeptides) {
-						// TODO, change this to check the modified peptide
 						final String sequenceAfterModification = modifiedPeptide.getSequenceAfterModification();
 						if (sequenceAfterModification.length() < Constants.MIN_PEP_LENGTH) { // Constants.MIN_PRECURSOR
 							continue;
@@ -249,7 +258,7 @@ public class ProteoformDBIndexer extends DBIndexer {
 							final String resRight = sbRight.toString();
 
 							// before adding the sequence:
-							final String key = protAccession + "|" + sequenceAfterModification + "|"
+							final String key = protAccession + "|" + modifiedPeptide.getSequenceWithModification() + "|"
 									+ modifiedPeptide.getProteinSequence().indexOf(sequenceAfterModification) + 1;
 							if (peptideKeys.contains(key)) {
 								continue;
