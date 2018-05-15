@@ -176,7 +176,7 @@ public class ProteoformDBIndexUtil {
 
 			for (final int position : phosphorilatedPositions.toArray()) {
 				final char aa = proteinSeq.charAt(position - 1);
-				final Proteoform proteoform = new Proteoform(accession, proteinSeq, accession, proteinSeq,
+				final Proteoform proteoform = new Proteoform(accession, proteinSeq, accession, proteinSeq, "",
 						"Phospho(" + aa + ")_at_" + position, null, null, ProteoformType.PTM, true);
 
 				final UniprotPTMCVTerm uniprotPTMCVTerm = UniprotPTMCVReader.getInstance()
