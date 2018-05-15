@@ -15,8 +15,8 @@ import edu.scripps.yates.proteoform_dbindex.model.PTM;
 import edu.scripps.yates.utilities.bytes.DynByteBuffer;
 
 public class ByteArrayUtil {
-	public static IndexedSequenceWithPTMs getIndexdedPeptideFromByteArray(byte[] data, int startIndex,
-			ProteoformProteinCache proteinCache) {
+	public static IndexedSequenceWithPTMs getIndexedPeptideFromByteArray(byte[] data, int startIndex,
+			ProteoformProteinCache proteinCache) throws DBIndexStoreException {
 		try {
 			int start = startIndex;
 			int end = startIndex + 8;
@@ -28,8 +28,10 @@ public class ByteArrayUtil {
 			start = end;
 			end = start + 2;
 			slice = Arrays.copyOfRange(data, start, end);
-			final short offset = DynByteBuffer.toShort(slice);
-
+			final char offset = DynByteBuffer.toChar(slice);
+			if (offset < 0) {
+				System.out.println("ASDF");
+			}
 			// length (short, 2 bytes)
 			start = end;
 			end = start + 2;
@@ -67,32 +69,29 @@ public class ByteArrayUtil {
 				proteinIds.add(proteinID);
 			}
 			String sequence;
-			try {
-				sequence = proteinCache.getPeptideSequence(proteinIds.get(0), offset, length, ptms);
-				final IndexedSequenceWithPTMs ret = new IndexedSequenceWithPTMs(0, mass, sequence, "", "");
-				// ret.setProteinDescArray(proteinDescArray);
-				ret.setProteinIds(proteinIds);
-				for (final PTM ptm : ptms) {
-					ret.addPTM(ptm);
-				}
 
-				// set residues
-				final String protSequence = proteinCache.getProteinSequence(proteinIds.get(0));
-				final ResidueInfo residues = Util.getResidues(null, offset, length, protSequence);
-				ret.setResidues(residues);
-				return ret;
-			} catch (final DBIndexStoreException e) {
-				e.printStackTrace();
-				return null;
+			sequence = proteinCache.getPeptideSequence(proteinIds.get(0), offset, length, ptms);
+			final IndexedSequenceWithPTMs ret = new IndexedSequenceWithPTMs(0, mass, sequence, "", "");
+			// ret.setProteinDescArray(proteinDescArray);
+			ret.setProteinIds(proteinIds);
+			for (final PTM ptm : ptms) {
+				ret.addPTM(ptm);
 			}
+
+			// set residues
+			final String protSequence = proteinCache.getProteinSequence(proteinIds.get(0));
+			final ResidueInfo residues = Util.getResidues(null, offset, length, protSequence);
+			ret.setResidues(residues);
+			return ret;
+
 		} catch (final ArrayIndexOutOfBoundsException e) {
 			e.printStackTrace();
+			throw new DBIndexStoreException(e);
 		}
-		return null;
 	}
 
 	public static IndexedSeqInternalWithPtms getIndexedSeqInternalWithPtmsFromByteArray(byte[] data, int startIndex,
-			ProteoformProteinCache proteinCache) {
+			ProteoformProteinCache proteinCache) throws DBIndexStoreException {
 
 		int start = startIndex;
 		int end = startIndex + 8;
@@ -104,7 +103,7 @@ public class ByteArrayUtil {
 		start = end;
 		end = start + 2;
 		slice = Arrays.copyOfRange(data, start, end);
-		final short offset = DynByteBuffer.toShort(slice);
+		final char offset = DynByteBuffer.toChar(slice);
 
 		// length (short, 2 bytes)
 		start = end;
@@ -136,25 +135,21 @@ public class ByteArrayUtil {
 		slice = Arrays.copyOfRange(data, start, end);
 		final int proteinID = DynByteBuffer.toInt(slice);
 
-		String sequence;
-		try {
-			sequence = proteinCache.getPeptideSequence(proteinID, offset, length, ptms);
-			final IndexedSeqInternalWithPtms ret = new IndexedSeqInternalWithPtms(mass, offset, length, proteinID,
-					sequence, ptms);
-			return ret;
-		} catch (final DBIndexStoreException e) {
-			e.printStackTrace();
-			return null;
-		}
+		final String sequence = proteinCache.getPeptideSequence(proteinID, offset, length, ptms);
+		final IndexedSeqInternalWithPtms ret = new IndexedSeqInternalWithPtms(mass, offset, length, proteinID, sequence,
+				ptms);
+		return ret;
 
 	}
 
-	public static byte[] toByteArray(double precMass, short seqOffset, short seqLength, int proteinId, List<PTM> ptms) {
+	public static byte[] toByteArray(double precMass, char seqOffset, short seqLength, int proteinId, List<PTM> ptms) {
 		final DynByteBuffer byteBuffer = new DynByteBuffer();
 
 		final byte[] seqMassB = DynByteBuffer.toByteArray(precMass);
 		byteBuffer.add(seqMassB);
-
+		if (seqOffset < 0) {
+			System.out.println("asdf ");
+		}
 		final byte[] seqOffsetB = DynByteBuffer.toByteArray(seqOffset);
 		byteBuffer.add(seqOffsetB);
 
