@@ -54,7 +54,9 @@ public class ProteoformDBIndexStoreSQLiteByte extends DBIndexStoreSQLiteByte {
 		totalSeqCount++;
 		try {
 			final List<PTM> ptms = PTM.extractPTMsFromSequence(sequence, extendedAssignMass);
-			updateCachedData(precMass, (short) seqOffset, (short) seqLength, (int) proteinId, ptms);
+			final char seqOffsetChar = DynByteBuffer.toChar(DynByteBuffer.toByteArray(seqOffset));
+
+			updateCachedData(precMass, seqOffsetChar, (short) seqLength, (int) proteinId, ptms);
 
 			if (true) {
 				// despite commiting each sequence, commit and clear all after
@@ -85,7 +87,7 @@ public class ProteoformDBIndexStoreSQLiteByte extends DBIndexStoreSQLiteByte {
 	 * @param ptms
 	 */
 
-	protected void updateCachedData(double precMass, short seqOffset, short seqLength, int proteinId, List<PTM> ptms) {
+	protected void updateCachedData(double precMass, char seqOffset, short seqLength, int proteinId, List<PTM> ptms) {
 		// changed by Salva 11Nov2014, using the value on IndexUtil
 		final int rowId = (int) (precMass * sparam.getMassGroupFactor());
 
@@ -118,7 +120,8 @@ public class ProteoformDBIndexStoreSQLiteByte extends DBIndexStoreSQLiteByte {
 	}
 
 	@Override
-	protected void parseAddPeptideInfo(byte[] data, List<IndexedSequence> toInsert, double minMass, double maxMass) {
+	protected void parseAddPeptideInfo(byte[] data, List<IndexedSequence> toInsert, double minMass, double maxMass)
+			throws DBIndexStoreException {
 
 		// to collapse multiple sequences into single one, with multiproteins
 		final Map<String, List<IndexedSeqInternalWithPtms>> temp = new THashMap<String, List<IndexedSeqInternalWithPtms>>();

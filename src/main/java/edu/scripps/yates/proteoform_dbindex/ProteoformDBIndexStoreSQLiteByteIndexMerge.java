@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.mortbay.log.Log;
+
 import edu.scripps.yates.dbindex.Constants;
 import edu.scripps.yates.dbindex.DBIndexStoreException;
 import edu.scripps.yates.dbindex.DBIndexStoreSQLiteByteIndexMerge;
@@ -54,9 +56,11 @@ public class ProteoformDBIndexStoreSQLiteByteIndexMerge extends DBIndexStoreSQLi
 	 *            used to eliminate not matching masses in the 1ppm row
 	 * @param maxMass
 	 *            used to eliminate not matching masses in the 1ppm row
+	 * @throws DBIndexStoreException
 	 */
 	@Override
-	protected void parseAddPeptideInfo(byte[] data, List<IndexedSequence> toInsert, double minMass, double maxMass) {
+	protected void parseAddPeptideInfo(byte[] data, List<IndexedSequence> toInsert, double minMass, double maxMass)
+			throws DBIndexStoreException {
 
 		final int dataLength = data.length;
 
@@ -66,7 +70,7 @@ public class ProteoformDBIndexStoreSQLiteByteIndexMerge extends DBIndexStoreSQLi
 		// }
 		int i = 0;
 		while (i < dataLength) {
-			final IndexedSequenceWithPTMs pep = ByteArrayUtil.getIndexdedPeptideFromByteArray(data, i,
+			final IndexedSequenceWithPTMs pep = ByteArrayUtil.getIndexedPeptideFromByteArray(data, i,
 					getProteoformProteinCache());
 			i += pep.getBySize();
 			toInsert.add(pep);
@@ -89,10 +93,11 @@ public class ProteoformDBIndexStoreSQLiteByteIndexMerge extends DBIndexStoreSQLi
 	 *            used to eliminate not matching masses in the 1ppm row
 	 * @param maxMasses
 	 *            used to eliminate not matching masses in the 1ppm row
+	 * @throws DBIndexStoreException
 	 */
 	@Override
 	protected void parseAddPeptideInfo(byte[] data, List<IndexedSequence> toInsert, double[] minMasses,
-			double[] maxMasses) {
+			double[] maxMasses) throws DBIndexStoreException {
 
 		final int dataLength = data.length;
 
@@ -105,7 +110,7 @@ public class ProteoformDBIndexStoreSQLiteByteIndexMerge extends DBIndexStoreSQLi
 		int i = 0;
 		// go over every sequence in the data row
 		while (i < dataLength) {
-			final IndexedSequenceWithPTMs pep = ByteArrayUtil.getIndexdedPeptideFromByteArray(data, i,
+			final IndexedSequenceWithPTMs pep = ByteArrayUtil.getIndexedPeptideFromByteArray(data, i,
 					getProteoformProteinCache());
 			i += pep.getBySize();
 			final double seqMass = pep.getMass();
@@ -271,7 +276,12 @@ public class ProteoformDBIndexStoreSQLiteByteIndexMerge extends DBIndexStoreSQLi
 		try {
 			totalSeqCount++;
 			final List<PTM> ptms = PTM.extractPTMsFromSequence(sequence, extendedAssignMass);
-			updateCachedData(precMass, (short) seqOffset, (short) seqLength, (int) proteinId, ptms);
+			if (seqOffset > 32767) {
+				Log.info("track this downt to bytes");
+			}
+			new DynByteBuffer();
+			final char seqOffsetChar = DynByteBuffer.toChar(DynByteBuffer.toByteArray(seqOffset));
+			updateCachedData(precMass, seqOffsetChar, (short) seqLength, (int) proteinId, ptms);
 
 			if (true) {
 				// despite commiting each sequence, commit and clear all after
@@ -300,7 +310,7 @@ public class ProteoformDBIndexStoreSQLiteByteIndexMerge extends DBIndexStoreSQLi
 	 * @param seqLength
 	 * @param proteinId
 	 */
-	protected void updateCachedData(double precMass, short seqOffset, short seqLength, int proteinId, List<PTM> ptms) {
+	protected void updateCachedData(double precMass, char seqOffset, short seqLength, int proteinId, List<PTM> ptms) {
 		// changed by Salva 11Nov2014, using the value on IndexUtil
 		final int rowId = (int) (precMass * sparam.getMassGroupFactor());
 
@@ -312,9 +322,6 @@ public class ProteoformDBIndexStoreSQLiteByteIndexMerge extends DBIndexStoreSQLi
 			// change by Salva 21Nov2014
 			// data[rowId] = byteBuffer;
 			dataMap.put(rowId, byteBuffer);
-		}
-		if (precMass == 2776.265812566) {
-			logger.info("asdf");
 		}
 		byteBuffer.add(ByteArrayUtil.toByteArray(precMass, seqOffset, seqLength, proteinId, ptms));
 
