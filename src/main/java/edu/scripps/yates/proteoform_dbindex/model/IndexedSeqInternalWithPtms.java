@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class IndexedSeqInternalWithPtms implements Comparable<IndexedSeqInternalWithPtms> {
 
-	public IndexedSeqInternalWithPtms(double mass, short offset, short length, int proteinId, String sequence,
+	public IndexedSeqInternalWithPtms(double mass, char offset, short length, int proteinId, String sequence,
 			String protDescription, List<PTM> ptms) {
 		this.mass = mass;
 		this.offset = offset;
@@ -27,14 +27,14 @@ public class IndexedSeqInternalWithPtms implements Comparable<IndexedSeqInternal
 
 	}
 
-	public IndexedSeqInternalWithPtms(double mass, short offset, short length, int proteinId, String sequence,
+	public IndexedSeqInternalWithPtms(double mass, char offset, short length, int proteinId, String sequence,
 			List<PTM> ptms) {
 		this(mass, offset, length, proteinId, sequence, null, ptms);
 
 	}
 
 	private final double mass;
-	private final short offset;
+	private final char offset;
 	private final short length;
 	private final int proteinId;
 	private final String protDescription;
@@ -89,7 +89,7 @@ public class IndexedSeqInternalWithPtms implements Comparable<IndexedSeqInternal
 		return mass;
 	}
 
-	public short getOffset() {
+	public char getOffset() {
 		return offset;
 	}
 
