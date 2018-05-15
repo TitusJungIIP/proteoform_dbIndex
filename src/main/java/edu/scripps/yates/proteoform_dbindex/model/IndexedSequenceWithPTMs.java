@@ -10,9 +10,6 @@ public class IndexedSequenceWithPTMs extends IndexedSequence {
 
 	public IndexedSequenceWithPTMs(long id, double mass, String sequence, String resLeft, String resRight) {
 		super(id, mass, sequence, resLeft, resRight);
-		if (sequence.equals("MEEPQS[P->S]PSVEPPLSQETFSDLWK")) {
-			System.out.println("ASDF");
-		}
 	}
 
 	public void addPTM(PTM ptm) {
