@@ -137,13 +137,16 @@ public class ProteoformDBIndexer extends DBIndexer {
 		for (int i = 0; i < isoformProteoforms.size() + 1; i++) {
 			String proteinSequence = canonicalProtSeq;
 			String proteinAccession = protAccession;
+			String proteinFastaHeaderTMP = proteinFastaHeader;
 			Proteoform isoform = null;
 			if (i < isoformProteoforms.size()) {
 				isoform = isoformProteoforms.get(i);
 				proteinSequence = isoform.getSeq();
 				proteinAccession = isoform.getId();
+				proteinFastaHeaderTMP = "sp|" + isoform.getId() + "|" + isoform.getName() + " "
+						+ isoform.getDescription();
 			}
-			final int proteinId = proteinCache.addProtein(proteinAccession, proteinSequence);
+			final int proteinId = proteinCache.addProtein(proteinFastaHeaderTMP, proteinSequence);
 			final int proteinLength = proteinSequence.length();
 			// here, if isoform is null, we are in the latest index 'i'
 			// which is when we apply all the nonIsoforms to the main
@@ -258,8 +261,8 @@ public class ProteoformDBIndexer extends DBIndexer {
 							final String resRight = sbRight.toString();
 
 							// before adding the sequence:
-							final String key = protAccession + "|" + modifiedPeptide.getSequenceWithModification() + "|"
-									+ modifiedPeptide.getProteinSequence().indexOf(sequenceAfterModification) + 1;
+							final String key = proteinAccession + "|" + modifiedPeptide.getSequenceWithModification()
+									+ "|" + modifiedPeptide.getProteinSequence().indexOf(sequenceAfterModification) + 1;
 							if (peptideKeys.contains(key)) {
 								continue;
 							} else {
