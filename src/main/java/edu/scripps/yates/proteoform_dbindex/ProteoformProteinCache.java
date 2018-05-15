@@ -38,7 +38,7 @@ public class ProteoformProteinCache extends ProteinCache {
 		this.proteinCacheFile = proteinCacheFile;
 	}
 
-	public String getPeptideSequence(int proteinId, short seqOffset, short seqLen, List<PTM> ptms)
+	public String getPeptideSequence(int proteinId, char seqOffset, short seqLen, List<PTM> ptms)
 			throws DBIndexStoreException {
 		String protSeq = null;
 		try {
@@ -57,12 +57,12 @@ public class ProteoformProteinCache extends ProteinCache {
 			return applyPTMs(peptideSeq, ptms);
 		} catch (final Exception e) {
 			e.printStackTrace();
-			log.error("Error tryin to get substring from " + protSeq);
-			log.error("Using beginIndex:" + seqOffset + " and length: " + seqLen);
-			log.error(e.getMessage());
+			final String error = "Error tryin to get substring from " + protSeq + "\nUsing beginIndex:" + seqOffset
+					+ " and length: " + seqLen + ": " + e.getMessage();
+			log.error(error);
+			throw new DBIndexStoreException(error, e);
 		}
 
-		return null;
 	}
 
 	private String applyPTMs(String peptideSeq, List<PTM> ptms) {
