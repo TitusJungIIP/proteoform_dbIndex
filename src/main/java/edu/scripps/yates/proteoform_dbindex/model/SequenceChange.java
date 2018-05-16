@@ -6,6 +6,14 @@ import org.apache.commons.lang.math.IntRange;
 
 import edu.scripps.yates.annotations.uniprot.proteoform.ProteoformType;
 
+/**
+ * Class representing a change in the peptide sequence, stating in which
+ * position (or range of positions), the sequence change (a substitution or a
+ * PTM)
+ * 
+ * @author salvador
+ *
+ */
 public class SequenceChange implements Comparable<SequenceChange> {
 	private final IntRange positionInPeptide;
 	private final String original;
