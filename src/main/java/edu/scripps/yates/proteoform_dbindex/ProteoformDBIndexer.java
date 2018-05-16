@@ -50,15 +50,17 @@ public class ProteoformDBIndexer extends DBIndexer {
 	private MyEnzyme enzyme;
 	private final ExtendedAssignMass extendedAssignMass;
 	private final UniprotProteinLocalRetriever uplr;
+	private final Set<String> peptideInclusionList;
 
 	public ProteoformDBIndexer(DBIndexSearchParams sparam, IndexerMode indexerMode, boolean useUniprot,
 			boolean usePhosphosite, String phosphoSiteSpecies, UniprotProteinLocalRetriever uplr, String uniprotVersion,
-			int maxNumVariationsPerPeptide) throws IOException {
+			int maxNumVariationsPerPeptide, Set<String> peptideInclusionList) throws IOException {
 		super(sparam, indexerMode,
 				new ProteoformDBIndexStoreSQLiteMult(sparam, false,
 						ExtendedAssignMass.getInstance(sparam.isUseMonoParent(),
 								new File(new File(sparam.getFullIndexFileName()).getAbsolutePath() + File.separator
 										+ PTMCodeObj.FILE_NAME))));
+		this.peptideInclusionList = peptideInclusionList;
 		this.uplr = uplr;
 		this.usePhosphosite = usePhosphosite;
 		this.useUniprot = useUniprot;
@@ -163,8 +165,8 @@ public class ProteoformDBIndexer extends DBIndexer {
 
 			final Set<String> peptideKeys = new THashSet<String>();
 			for (final String peptideSequence : peptides) {
-				if (peptideSequence.equals("MEEPQSDPSVEPPLSQETFSDLWK")) {
-					System.out.println(peptideSequence);
+				if (peptideInclusionList != null && !peptideInclusionList.contains(peptideSequence)) {
+					continue;
 				}
 				// at least one of this AAs has to be in the sequence:
 				final char[] mandatoryInternalAAs = sparam.getMandatoryInternalAAs();
