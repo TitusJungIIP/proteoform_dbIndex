@@ -1,8 +1,8 @@
 package edu.scripps.yates.proteoform_dbindex.model;
 
 /**
- * Represents a sequence with a modification, whether it is a PTM or a sequence
- * variation
+ * Represents a peptide or protein sequence with a modification, whether it is a
+ * PTM or a sequence variation
  * 
  * @author salvador
  *
