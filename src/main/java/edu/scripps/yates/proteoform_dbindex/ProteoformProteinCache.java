@@ -14,6 +14,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.apache.log4j.Logger;
 
@@ -32,6 +35,7 @@ public class ProteoformProteinCache extends ProteinCache {
 	private final static Charset CHARSET = StandardCharsets.UTF_8;
 	private final List<Integer> indexesToWrite = new ArrayList<Integer>();
 	private static final int bufferSize = 100;
+	private static final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
 
 	public ProteoformProteinCache(ExtendedAssignMass extendedAssignMass, File proteinCacheFile) {
 		this.extendedAssignMass = extendedAssignMass;
@@ -101,24 +105,29 @@ public class ProteoformProteinCache extends ProteinCache {
 		sequences.clear();
 		defs.clear();
 		if (proteinCacheFile.exists()) {
-			final InputStreamReader isr = new InputStreamReader(new FileInputStream(proteinCacheFile), CHARSET);
-			final BufferedReader br = new BufferedReader(isr);
-			String line = null;
-			while ((line = br.readLine()) != null) {
-				final String[] split = line.split("\t");
-				defs.add(split[1]);
-				if (split.length > 2) {
-					sequences.add(split[2]);
+			final ReadLock readLock = lock.readLock();
+			try {
+				readLock.lock();
+				final InputStreamReader isr = new InputStreamReader(new FileInputStream(proteinCacheFile), CHARSET);
+				final BufferedReader br = new BufferedReader(isr);
+				String line = null;
+				while ((line = br.readLine()) != null) {
+					final String[] split = line.split("\t");
+					defs.add(split[1]);
+					if (split.length > 2) {
+						sequences.add(split[2]);
+					}
 				}
+				br.close();
+			} finally {
+				readLock.unlock();
 			}
-			br.close();
-
 		}
 		loaded = true;
 	}
 
 	@Override
-	protected synchronized boolean isPopulated() {
+	protected boolean isPopulated() {
 		// load first
 		try {
 			load();
@@ -175,18 +184,25 @@ public class ProteoformProteinCache extends ProteinCache {
 		}
 	}
 
-	public synchronized void writeBuffer() {
+	public void writeBuffer() {
 		try {
 			load();
 			if (!indexesToWrite.isEmpty()) {
 				log.info("Writting protein cache to file...");
-				final OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(proteinCacheFile, true),
-						CHARSET);
-				for (final Integer index : indexesToWrite) {
-					out.write(index + "\t" + defs.get(index) + "\t" + sequences.get(index) + "\n");
+				final WriteLock writeLock = lock.writeLock();
+				try {
+					final OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(proteinCacheFile, true),
+							CHARSET);
+					for (final Integer index : indexesToWrite) {
+						out.write(index + "\t" + defs.get(index) + "\t" + sequences.get(index) + "\n");
+					}
+					out.close();
+					indexesToWrite.clear();
+
+				} finally {
+					writeLock.unlock();
 				}
-				out.close();
-				indexesToWrite.clear();
+
 			}
 		} catch (final FileNotFoundException e) {
 		} catch (final IOException e) {
