@@ -76,6 +76,7 @@ public class ProteoformDBIndexer extends DBIndexer {
 		}
 
 		proteoformRetriever = new UniprotProteoformRetrieverFromXML(uplr, uniprotVersion);
+		proteoformRetriever.setRetrieveIsoforms(sparam.isLookProteoforms());
 
 		this.maxNumVariationsPerPeptide = maxNumVariationsPerPeptide;
 		extendedAssignMass = ExtendedAssignMass.getInstance(sparam.isUseMonoParent(), new File(
