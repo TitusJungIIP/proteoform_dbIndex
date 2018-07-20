@@ -1,6 +1,7 @@
 package edu.scripps.yates.proteoform_dbindex;
 
 import java.io.File;
+import java.io.IOException;
 
 import edu.scripps.yates.dbindex.Constants;
 import edu.scripps.yates.dbindex.DBIndexStoreException;
@@ -90,7 +91,12 @@ public class ProteoformDBIndexStoreSQLiteMult extends DBIndexStoreSQLiteMult {
 	@Override
 	public void stopAddSeq() throws DBIndexStoreException {
 		if (proteinCache instanceof ProteoformProteinCache) {
-			((ProteoformProteinCache) proteinCache).writeBuffer();
+			try {
+				((ProteoformProteinCache) proteinCache).writeBuffer();
+			} catch (final IOException e) {
+				e.printStackTrace();
+				throw new DBIndexStoreException(e);
+			}
 		}
 		super.stopAddSeq();
 	}

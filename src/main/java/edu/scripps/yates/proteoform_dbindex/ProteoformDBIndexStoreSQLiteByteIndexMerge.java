@@ -342,7 +342,12 @@ public class ProteoformDBIndexStoreSQLiteByteIndexMerge extends DBIndexStoreSQLi
 	@Override
 	public void stopAddSeq() throws DBIndexStoreException {
 		if (proteinCache instanceof ProteoformProteinCache) {
-			((ProteoformProteinCache) proteinCache).writeBuffer();
+			try {
+				((ProteoformProteinCache) proteinCache).writeBuffer();
+			} catch (final IOException e) {
+				e.printStackTrace();
+				throw new DBIndexStoreException(e);
+			}
 		}
 		super.stopAddSeq();
 	}
