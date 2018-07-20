@@ -176,7 +176,7 @@ public class ProteoformProteinCache extends ProteinCache {
 		return -1;
 	}
 
-	private void addToBuffer(int index) {
+	private void addToBuffer(int index) throws IOException {
 		indexesToWrite.add(index);
 		// check if we should write
 		if (indexesToWrite.size() >= bufferSize) {
@@ -184,29 +184,26 @@ public class ProteoformProteinCache extends ProteinCache {
 		}
 	}
 
-	public void writeBuffer() {
-		try {
-			load();
-			if (!indexesToWrite.isEmpty()) {
-				log.info("Writting protein cache to file...");
-				final WriteLock writeLock = lock.writeLock();
-				try {
-					final OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(proteinCacheFile, true),
-							CHARSET);
-					for (final Integer index : indexesToWrite) {
-						out.write(index + "\t" + defs.get(index) + "\t" + sequences.get(index) + "\n");
-					}
-					out.close();
-					indexesToWrite.clear();
+	public void writeBuffer() throws IOException {
 
-				} finally {
-					writeLock.unlock();
+		load();
+		if (!indexesToWrite.isEmpty()) {
+			log.info("Writting protein cache to file...");
+			final WriteLock writeLock = lock.writeLock();
+			try {
+				writeLock.lock();
+				final OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(proteinCacheFile, true),
+						CHARSET);
+				for (final Integer index : indexesToWrite) {
+					out.write(index + "\t" + defs.get(index) + "\t" + sequences.get(index) + "\n");
 				}
+				out.close();
+				indexesToWrite.clear();
 
+			} finally {
+				writeLock.unlock();
 			}
-		} catch (final FileNotFoundException e) {
-		} catch (final IOException e) {
-			e.printStackTrace();
+
 		}
 
 	}
