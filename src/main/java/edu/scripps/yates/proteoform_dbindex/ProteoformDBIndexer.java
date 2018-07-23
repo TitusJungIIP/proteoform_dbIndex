@@ -40,7 +40,7 @@ public class ProteoformDBIndexer extends DBIndexer {
 	// TODO
 	// TO PUT THESE PARAMETERS IN sParam? :
 	public static final int MIN_PEPTIDE_LENGHT = 6;
-	public static final int MAX_PEPTIDE_LENGTH = 40;
+	public static final int MAX_PEPTIDE_LENGTH = 100;
 	////////////////////////////////////////////
 	private final boolean useUniprot;
 	private final boolean usePhosphosite;
@@ -111,7 +111,8 @@ public class ProteoformDBIndexer extends DBIndexer {
 			canonicalAccession = FastaParser.getNoIsoformAccession(protAccession);
 		}
 
-		final List<String> canonicalProteinPeptides = digestProtein(canonicalProtSeq);
+		final List<String> digestProtein = digestProtein(canonicalProtSeq);
+		final List<String> canonicalProteinPeptides = digestProtein;
 
 		Map<String, List<Proteoform>> proteoformMap = new THashMap<String, List<Proteoform>>();
 		if (useUniprot && isUniprot) {
@@ -192,6 +193,9 @@ public class ProteoformDBIndexer extends DBIndexer {
 
 					for (final SequenceWithModification modifiedPeptide : modifiedPeptides) {
 						final String sequenceAfterModification = modifiedPeptide.getSequenceAfterModification();
+						if (sequenceAfterModification.equals("AWGPGLHGGIVGR")) {
+							logger.info(peptideSequence);
+						}
 						if (sequenceAfterModification.length() < Constants.MIN_PEP_LENGTH) { // Constants.MIN_PRECURSOR
 							continue;
 						}
@@ -216,10 +220,10 @@ public class ProteoformDBIndexer extends DBIndexer {
 						precMass += modifiedPeptide.getSequenceMassAfterModification();
 
 						if (precMass > sparam.getMaxPrecursorMass()) {
-							break;
+							continue;
 						}
 						if (precMass < sparam.getMinPrecursorMass()) {
-							break;
+							continue;
 						}
 						// check if index will accept it
 						final FilterResult filterResult = indexStore.filterSequence(precMass,
@@ -228,7 +232,7 @@ public class ProteoformDBIndexer extends DBIndexer {
 							// bail out earlier as we are no longer
 							// interested in this protein starting at
 							// start
-							break; // move to new start position
+							continue; // move to new start position
 						} else if (filterResult.equals(FilterResult.INCLUDE)) {
 
 							start = modifiedPeptide.getProteinSequence().indexOf(sequenceAfterModification);

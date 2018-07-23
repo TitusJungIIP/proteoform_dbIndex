@@ -34,7 +34,7 @@ public class ProteoformProteinCache extends ProteinCache {
 	private boolean loaded;
 	private final static Charset CHARSET = StandardCharsets.UTF_8;
 	private final List<Integer> indexesToWrite = new ArrayList<Integer>();
-	private static final int bufferSize = 100;
+	private static final int bufferSize = 1000;
 	private static final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
 
 	public ProteoformProteinCache(ExtendedAssignMass extendedAssignMass, File proteinCacheFile) {
@@ -102,8 +102,8 @@ public class ProteoformProteinCache extends ProteinCache {
 		if (loaded) {
 			return;
 		}
-		sequences.clear();
-		defs.clear();
+		super.clearSequences();
+		super.clearDefs();
 		if (proteinCacheFile.exists()) {
 			final ReadLock readLock = lock.readLock();
 			try {
@@ -113,9 +113,10 @@ public class ProteoformProteinCache extends ProteinCache {
 				String line = null;
 				while ((line = br.readLine()) != null) {
 					final String[] split = line.split("\t");
-					defs.add(split[1]);
-					if (split.length > 2) {
-						sequences.add(split[2]);
+					if (split.length == 2) {
+						super.addProtein(split[1]);
+					} else if (split.length > 2) {
+						super.addProtein(split[1], split[2]);
 					}
 				}
 				br.close();
@@ -144,7 +145,7 @@ public class ProteoformProteinCache extends ProteinCache {
 
 		try {
 			load();
-			final int ret = defs.indexOf(def);
+			final int ret = super.getIndexOfDef(def);
 			if (ret >= 0) {
 				return ret;
 			}
@@ -161,7 +162,7 @@ public class ProteoformProteinCache extends ProteinCache {
 	public int addProtein(String def, String protein) {
 		try {
 			load();
-			final int ret = defs.indexOf(def);
+			final int ret = super.getIndexOfDef(def);
 			if (ret >= 0) {
 				return ret;
 			}
@@ -195,7 +196,7 @@ public class ProteoformProteinCache extends ProteinCache {
 				final OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(proteinCacheFile, true),
 						CHARSET);
 				for (final Integer index : indexesToWrite) {
-					out.write(index + "\t" + defs.get(index) + "\t" + sequences.get(index) + "\n");
+					out.write(index + "\t" + super.getDef(index) + "\t" + super.getSequence(index) + "\n");
 				}
 				out.close();
 				indexesToWrite.clear();

@@ -427,6 +427,12 @@ public class ProteoformDBIndexUtil {
 			System.out.println("asdf");
 		}
 		final Set<SequenceWithModification> ret = new THashSet<SequenceWithModification>();
+		// check whether the peptide has the correct number of
+		// allowed misscleavages
+		if (getNumMissedClavages(peptideSeq, enzyme) <= enzyme.getMiscleavages()
+				&& peptideSeq.length() >= Constants.MIN_PEP_LENGTH) {
+			ret.add(new SequenceWithModification(peptideSeq, peptideSeq, extendedAssignMass, proteinSequence));
+		}
 		final List<SequenceChange> sequenceChangesNaturalVariants = sequenceChanges.stream()
 				.filter(s -> s.getProteoformType() == ProteoformType.NATURAL_VARIANT).collect(Collectors.toList());
 		final List<SequenceChange> sequenceChangesOthers = sequenceChanges.stream()
@@ -460,10 +466,8 @@ public class ProteoformDBIndexUtil {
 							break;
 						}
 					}
-					if (indexes == null) {
-						continue;
-					}
-					if (indexes.length > 0) {
+
+					if (indexes != null && indexes.length > 0) {
 						// iterate over them to construct the key
 						final SequenceWithModification sequenceChanged = getModifiedSequence(peptideSeq,
 								listOfSequenceChangesToApply, 0, indexes, extendedAssignMass, proteinSequence);
@@ -502,17 +506,7 @@ public class ProteoformDBIndexUtil {
 										maxNumVariationsPerPeptide, extendedAssignMass));
 							}
 						}
-					} else {
-						// check whether the peptide has the correct number of
-						// allowed misscleavages
-						if (getNumMissedClavages(peptideSeq, enzyme) > enzyme.getMiscleavages()) {
-							continue;
-						}
-						if (peptideSeq.length() < Constants.MIN_PEP_LENGTH) {
-							continue;
-						}
-						ret.add(new SequenceWithModification(peptideSeq, peptideSeq, extendedAssignMass,
-								proteinSequence));
+
 					}
 				}
 			}
