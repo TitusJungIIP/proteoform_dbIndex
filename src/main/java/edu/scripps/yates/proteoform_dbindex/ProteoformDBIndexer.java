@@ -196,9 +196,6 @@ public class ProteoformDBIndexer extends DBIndexer {
 
 					for (final SequenceWithModification modifiedPeptide : modifiedPeptides) {
 						final String sequenceAfterModification = modifiedPeptide.getSequenceAfterModification();
-						if (sequenceAfterModification.equals("AWGPGLHGGIVGR")) {
-							logger.info(peptideSequence);
-						}
 						if (sequenceAfterModification.length() < Constants.MIN_PEP_LENGTH) { // Constants.MIN_PRECURSOR
 							continue;
 						}
