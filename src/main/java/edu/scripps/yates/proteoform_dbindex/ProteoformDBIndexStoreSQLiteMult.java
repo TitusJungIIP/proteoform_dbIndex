@@ -4,10 +4,10 @@ import java.io.File;
 import java.io.IOException;
 
 import edu.scripps.yates.dbindex.Constants;
-import edu.scripps.yates.dbindex.DBIndexStoreException;
 import edu.scripps.yates.dbindex.DBIndexStoreSQLiteMult;
-import edu.scripps.yates.dbindex.model.DBIndexSearchParams;
 import edu.scripps.yates.proteoform_dbindex.model.ExtendedAssignMass;
+import edu.scripps.yates.utilities.fasta.dbindex.DBIndexSearchParams;
+import edu.scripps.yates.utilities.fasta.dbindex.DBIndexStoreException;
 
 public class ProteoformDBIndexStoreSQLiteMult extends DBIndexStoreSQLiteMult {
 	private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger

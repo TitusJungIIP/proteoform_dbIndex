@@ -20,11 +20,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.apache.log4j.Logger;
 
-import edu.scripps.yates.dbindex.DBIndexStoreException;
 import edu.scripps.yates.dbindex.ProteinCache;
 import edu.scripps.yates.proteoform_dbindex.model.ExtendedAssignMass;
 import edu.scripps.yates.proteoform_dbindex.model.PTM;
 import edu.scripps.yates.proteoform_dbindex.model.PTMCodeObj;
+import edu.scripps.yates.utilities.fasta.dbindex.DBIndexStoreException;
 
 public class ProteoformProteinCache extends ProteinCache {
 	private final static Logger log = Logger.getLogger(ProteoformProteinCache.class);

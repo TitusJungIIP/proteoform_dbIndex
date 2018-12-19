@@ -73,7 +73,7 @@ public class ProteoformStatistics {
 		try {
 			phosphositeDB = new PhosphositeDB("human");
 			System.out.println(phosphositeDB.getTotalPhosphoSites() + " phosphosites in PhosphoSiteDB");
-			psiModReader = new PSIModOBOPlainTextReader();
+			psiModReader = PSIModOBOPlainTextReader.getInstance();
 			uplr = new UniprotProteinLocalRetriever(uniprotReleasesFolder, true);
 			final UniprotProteoformRetrieverFromXML proteoformRetriever = new UniprotProteoformRetrieverFromXML(uplr,
 					uniprotVersion);
@@ -274,7 +274,7 @@ public class ProteoformStatistics {
 			for (final int position : phosphorilatedPositions.toArray()) {
 				final char aa = proteinSeq.charAt(position - 1);
 				final Proteoform proteoform = new Proteoform(accession, proteinSeq, accession, proteinSeq,
-						"Phospho(" + aa + ")_at_" + position, null, null, ProteoformType.PTM, true);
+						"Phospho(" + aa + ")_at_" + position, "", null, null, ProteoformType.PTM, true);
 
 				final UniprotPTMCVTerm uniprotPTMCVTerm = UniprotPTMCVReader.getInstance().getPtmsByID(getPTMID(aa));
 

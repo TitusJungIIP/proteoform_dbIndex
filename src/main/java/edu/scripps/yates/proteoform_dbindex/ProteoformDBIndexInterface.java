@@ -7,15 +7,15 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import edu.scripps.yates.annotations.uniprot.UniprotProteinLocalRetriever;
-import edu.scripps.yates.dbindex.DBIndexInterface;
+import edu.scripps.yates.dbindex.DBIndexImpl;
 import edu.scripps.yates.dbindex.DBIndexer.IndexerMode;
 import edu.scripps.yates.dbindex.DBIndexerException;
 import edu.scripps.yates.dbindex.SearchParams;
 import edu.scripps.yates.dbindex.io.SearchParamReader;
-import edu.scripps.yates.dbindex.model.DBIndexSearchParams;
+import edu.scripps.yates.utilities.fasta.dbindex.DBIndexSearchParams;
 import edu.scripps.yates.utilities.masses.AssignMass;
 
-public class ProteoformDBIndexInterface extends DBIndexInterface {
+public class ProteoformDBIndexInterface extends DBIndexImpl {
 	private final static Logger log = Logger.getLogger(ProteoformDBIndexInterface.class);
 
 	public ProteoformDBIndexInterface(File paramFile, boolean useUniprot, boolean usePhosphosite,

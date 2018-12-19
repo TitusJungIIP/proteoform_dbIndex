@@ -11,10 +11,7 @@ import java.util.Map;
 import org.mortbay.log.Log;
 
 import edu.scripps.yates.dbindex.Constants;
-import edu.scripps.yates.dbindex.DBIndexStoreException;
 import edu.scripps.yates.dbindex.DBIndexStoreSQLiteByteIndexMerge;
-import edu.scripps.yates.dbindex.IndexedSequence;
-import edu.scripps.yates.dbindex.model.DBIndexSearchParams;
 import edu.scripps.yates.proteoform_dbindex.model.ExtendedAssignMass;
 import edu.scripps.yates.proteoform_dbindex.model.IndexedSeqInternalWithPtms;
 import edu.scripps.yates.proteoform_dbindex.model.IndexedSeqMergedWithPtms;
@@ -22,6 +19,9 @@ import edu.scripps.yates.proteoform_dbindex.model.IndexedSequenceWithPTMs;
 import edu.scripps.yates.proteoform_dbindex.model.PTM;
 import edu.scripps.yates.proteoform_dbindex.util.ByteArrayUtil;
 import edu.scripps.yates.utilities.bytes.DynByteBuffer;
+import edu.scripps.yates.utilities.fasta.dbindex.DBIndexSearchParams;
+import edu.scripps.yates.utilities.fasta.dbindex.DBIndexStoreException;
+import edu.scripps.yates.utilities.fasta.dbindex.IndexedSequence;
 import gnu.trove.map.hash.THashMap;
 
 public class ProteoformDBIndexStoreSQLiteByteIndexMerge extends DBIndexStoreSQLiteByteIndexMerge {

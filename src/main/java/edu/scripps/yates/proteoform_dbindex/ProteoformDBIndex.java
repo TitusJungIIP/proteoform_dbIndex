@@ -2,14 +2,14 @@ package edu.scripps.yates.proteoform_dbindex;
 
 import java.io.File;
 
-import edu.scripps.yates.dbindex.DBIndexInterface;
+import edu.scripps.yates.dbindex.DBIndexImpl;
 import edu.scripps.yates.dbindex.io.DBIndexSearchParamsImpl;
-import edu.scripps.yates.dbindex.model.DBIndexSearchParams;
+import edu.scripps.yates.utilities.fasta.dbindex.DBIndexSearchParams;
 
 public class ProteoformDBIndex {
 	public ProteoformDBIndex(File fastaFile, char[] enzymeArray, int missedCleavages, boolean semicleavage,
 			File uniprotReleasesFolder) {
-		final DBIndexSearchParams defaultDBIndexParams = DBIndexInterface.getDefaultDBIndexParams(fastaFile);
+		final DBIndexSearchParams defaultDBIndexParams = DBIndexImpl.getDefaultDBIndexParams(fastaFile);
 
 		((DBIndexSearchParamsImpl) defaultDBIndexParams).setEnzymeArr(enzymeArray, missedCleavages, semicleavage);
 		((DBIndexSearchParamsImpl) defaultDBIndexParams).setSemiCleavage(semicleavage);
@@ -21,6 +21,6 @@ public class ProteoformDBIndex {
 		// if looking for proteoforms, not use in memory
 		final boolean inMemoryIndex = false;
 		((DBIndexSearchParamsImpl) defaultDBIndexParams).setInMemoryIndex(inMemoryIndex);
-		final DBIndexInterface dbIndex = new DBIndexInterface(defaultDBIndexParams);
+		final DBIndexImpl dbIndex = new DBIndexImpl(defaultDBIndexParams);
 	}
 }

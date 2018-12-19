@@ -13,14 +13,15 @@ import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
 
 import edu.scripps.yates.annotations.uniprot.UniprotProteinLocalRetriever;
-import edu.scripps.yates.dbindex.DBIndexInterface;
-import edu.scripps.yates.dbindex.IndexedProtein;
-import edu.scripps.yates.dbindex.IndexedSequence;
+import edu.scripps.yates.dbindex.DBIndexImpl;
 import edu.scripps.yates.dbindex.io.DBIndexSearchParamsImpl;
-import edu.scripps.yates.dbindex.model.DBIndexSearchParams;
 import edu.scripps.yates.dbindex.util.IndexUtil;
 import edu.scripps.yates.proteoform_dbindex.ProteoformDBIndexInterface;
 import edu.scripps.yates.proteoform_dbindex.model.ExtendedAssignMass;
+import edu.scripps.yates.utilities.fasta.dbindex.DBIndexSearchParams;
+import edu.scripps.yates.utilities.fasta.dbindex.DBIndexStoreException;
+import edu.scripps.yates.utilities.fasta.dbindex.IndexedProtein;
+import edu.scripps.yates.utilities.fasta.dbindex.IndexedSequence;
 import edu.scripps.yates.utilities.masses.AssignMass;
 
 public class Tests {
@@ -34,7 +35,7 @@ public class Tests {
 			final int missedCleavages = 3;
 			final boolean semicleavage = false;
 			final File uniprotReleasesFolder = new File("Z:\\share\\Salva\\data\\uniprotKB");
-			final DBIndexSearchParams defaultDBIndexParams = DBIndexInterface.getDefaultDBIndexParams(fastaFile);
+			final DBIndexSearchParams defaultDBIndexParams = DBIndexImpl.getDefaultDBIndexParams(fastaFile);
 
 			((DBIndexSearchParamsImpl) defaultDBIndexParams).setEnzymeArr(enzymeArray, missedCleavages, semicleavage);
 			((DBIndexSearchParamsImpl) defaultDBIndexParams).setSemiCleavage(semicleavage);
@@ -48,7 +49,7 @@ public class Tests {
 			// if looking for proteoforms, not use in memory
 			final boolean inMemoryIndex = false;
 			((DBIndexSearchParamsImpl) defaultDBIndexParams).setInMemoryIndex(inMemoryIndex);
-			final DBIndexInterface dbIndex = new DBIndexInterface(defaultDBIndexParams);
+			final DBIndexImpl dbIndex = new DBIndexImpl(defaultDBIndexParams);
 			final Set<IndexedProtein> proteins = dbIndex.getProteins("MEEPQSDPSVEPPLSQETFSDLWK");
 			for (final IndexedProtein indexedProtein : proteins) {
 				System.out.println(indexedProtein.getAccession());
@@ -56,20 +57,23 @@ public class Tests {
 		} catch (final IOException e) {
 			e.printStackTrace();
 			fail();
+		} catch (final DBIndexStoreException e) {
+			e.printStackTrace();
+			fail();
 		}
 
 	}
 
 	@Test
-	public void testProteoformIndex() throws IOException {
+	public void testProteoformIndex() throws IOException, DBIndexStoreException {
 		File fastaFile;
-		// fastaFile = new ClassPathResource("P04637.fasta").getFile();
-		fastaFile = new File("D:\\Downloads\\casimir\\Uniprot_Human.fasta");
+		fastaFile = new ClassPathResource("P04637.fasta").getFile();
+		// fastaFile = new File("D:\\Downloads\\casimir\\Uniprot_Human.fasta");
 		final char[] enzymeArray = { 'K', 'R' };
 		final int missedCleavages = 3;
 		final boolean semicleavage = false;
 		final File uniprotReleasesFolder = new File("Z:\\share\\Salva\\data\\uniprotKB");
-		final DBIndexSearchParams defaultDBIndexParams = DBIndexInterface.getDefaultDBIndexParams(fastaFile);
+		final DBIndexSearchParams defaultDBIndexParams = DBIndexImpl.getDefaultDBIndexParams(fastaFile);
 		final int numVariationsPerPeptide = 5;
 		final boolean useUniprot = true;
 		final boolean usePhosphoSite = false;
@@ -87,7 +91,7 @@ public class Tests {
 
 		final ProteoformDBIndexInterface dbIndex = new ProteoformDBIndexInterface(defaultDBIndexParams, useUniprot,
 				usePhosphoSite, "human", new UniprotProteinLocalRetriever(uniprotReleasesFolder, true, true, true),
-				null, numVariationsPerPeptide);
+				null, numVariationsPerPeptide, null);
 		final String peptideSeq = "MEEPQSDPSVEPPLSQETFSDLWK";
 		final Set<IndexedProtein> proteins = dbIndex.getProteins(peptideSeq);
 		Assert.assertFalse(proteins.isEmpty());

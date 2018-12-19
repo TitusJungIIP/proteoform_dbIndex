@@ -4,15 +4,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import edu.scripps.yates.dbindex.DBIndexStoreException;
 import edu.scripps.yates.dbindex.DBIndexStoreSQLiteByteIndexMerge;
 import edu.scripps.yates.dbindex.Util;
-import edu.scripps.yates.dbindex.model.ResidueInfo;
 import edu.scripps.yates.proteoform_dbindex.ProteoformProteinCache;
 import edu.scripps.yates.proteoform_dbindex.model.IndexedSeqInternalWithPtms;
 import edu.scripps.yates.proteoform_dbindex.model.IndexedSequenceWithPTMs;
 import edu.scripps.yates.proteoform_dbindex.model.PTM;
 import edu.scripps.yates.utilities.bytes.DynByteBuffer;
+import edu.scripps.yates.utilities.fasta.dbindex.DBIndexStoreException;
+import edu.scripps.yates.utilities.fasta.dbindex.ResidueInfo;
 
 public class ByteArrayUtil {
 	public static IndexedSequenceWithPTMs getIndexedPeptideFromByteArray(byte[] data, int startIndex,

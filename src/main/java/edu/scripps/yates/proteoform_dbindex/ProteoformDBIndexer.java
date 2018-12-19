@@ -16,10 +16,8 @@ import edu.scripps.yates.annotations.uniprot.proteoform.ProteoformUtil;
 import edu.scripps.yates.annotations.uniprot.proteoform.xml.UniprotProteoformRetrieverFromXML;
 import edu.scripps.yates.dbindex.Constants;
 import edu.scripps.yates.dbindex.DBIndexStore.FilterResult;
-import edu.scripps.yates.dbindex.DBIndexStoreException;
 import edu.scripps.yates.dbindex.DBIndexer;
 import edu.scripps.yates.dbindex.ProteinCache;
-import edu.scripps.yates.dbindex.model.DBIndexSearchParams;
 import edu.scripps.yates.proteoform_dbindex.model.ExtendedAssignMass;
 import edu.scripps.yates.proteoform_dbindex.model.PTMCodeObj;
 import edu.scripps.yates.proteoform_dbindex.model.PhosphositeDB;
@@ -27,9 +25,12 @@ import edu.scripps.yates.proteoform_dbindex.model.SequenceChange;
 import edu.scripps.yates.proteoform_dbindex.model.SequenceWithModification;
 import edu.scripps.yates.proteoform_dbindex.util.ProteoformDBIndexUtil;
 import edu.scripps.yates.utilities.fasta.FastaParser;
+import edu.scripps.yates.utilities.fasta.dbindex.DBIndexSearchParams;
+import edu.scripps.yates.utilities.fasta.dbindex.DBIndexStoreException;
 import edu.scripps.yates.utilities.masses.AssignMass;
+import edu.scripps.yates.utilities.proteomicsmodel.Accession;
+import edu.scripps.yates.utilities.proteomicsmodel.enums.AccessionType;
 import edu.scripps.yates.utilities.sequence.MyEnzyme;
-import edu.scripps.yates.utilities.util.Pair;
 import gnu.trove.map.hash.THashMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.set.hash.THashSet;
@@ -102,13 +103,13 @@ public class ProteoformDBIndexer extends DBIndexer {
 		getEnzyme().clearCache();
 		//
 		boolean isUniprot = true;
-		final Pair<String, String> accPair = FastaParser.getACC(proteinFastaHeader);
-		String protAccession = accPair.getFirstelement();
+		final Accession accPair = FastaParser.getACC(proteinFastaHeader);
+		String protAccession = accPair.getAccession();
 		String canonicalAccession = null;
-		if (accPair.getSecondElement() == "UNKNOWN") {
+		if (accPair.getAccessionType() == AccessionType.UNKNOWN) {
 			logger.debug("Uniprot accession cannot be extracted from fasta header:  '" + proteinFastaHeader + "'");
 			isUniprot = false;
-			protAccession = accPair.getFirstelement();
+			protAccession = accPair.getAccession();
 			canonicalAccession = protAccession;
 		} else {
 			canonicalAccession = FastaParser.getNoIsoformAccession(protAccession);

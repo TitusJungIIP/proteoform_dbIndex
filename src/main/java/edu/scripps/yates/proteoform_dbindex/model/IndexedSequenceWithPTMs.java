@@ -3,7 +3,7 @@ package edu.scripps.yates.proteoform_dbindex.model;
 import java.util.HashSet;
 import java.util.Set;
 
-import edu.scripps.yates.dbindex.IndexedSequence;
+import edu.scripps.yates.utilities.fasta.dbindex.IndexedSequence;
 
 public class IndexedSequenceWithPTMs extends IndexedSequence {
 	private final Set<PTM> ptms = new HashSet<PTM>();
