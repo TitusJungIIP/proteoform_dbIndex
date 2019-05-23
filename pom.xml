@@ -59,6 +59,16 @@
   		<groupId>org.proteored.miape.api</groupId>
   		<artifactId>miape-api</artifactId>
   		<version>1.9.8-SNAPSHOT</version>
+  		<exclusions>
+  			<exclusion>
+  				<groupId>ch.qos.logback</groupId>
+  				<artifactId>logback-core</artifactId>
+  			</exclusion>
+  			<exclusion>
+  				<groupId>ch.qos.logback</groupId>
+  				<artifactId>logback-classic</artifactId>
+  			</exclusion>
+  		</exclusions>
   	</dependency>
   </dependencies>
 </project>
