@@ -54,8 +54,9 @@ public class ProteoformDBIndexer extends DBIndexer {
 	private final Set<String> peptideInclusionList;
 
 	public ProteoformDBIndexer(DBIndexSearchParams sparam, IndexerMode indexerMode, boolean useUniprot,
-			boolean usePhosphosite, String phosphoSiteSpecies, UniprotProteinLocalRetriever uplr, String uniprotVersion,
-			int maxNumVariationsPerPeptide, Set<String> peptideInclusionList) throws IOException {
+			boolean usePhosphosite, String phosphoSiteSpecies, File phosphoSiteDBFastaFile,
+			UniprotProteinLocalRetriever uplr, String uniprotVersion, int maxNumVariationsPerPeptide,
+			Set<String> peptideInclusionList) throws IOException {
 		super(sparam, indexerMode,
 				new ProteoformDBIndexStoreSQLiteMult(sparam, false,
 						ExtendedAssignMass.getInstance(sparam.isUseMonoParent(),
@@ -67,7 +68,11 @@ public class ProteoformDBIndexer extends DBIndexer {
 		this.useUniprot = useUniprot;
 		if (usePhosphosite) {
 			if (phosphoSiteSpecies != null && !"".equals(phosphoSiteSpecies)) {
-				phosphositeDB = new PhosphositeDB(phosphoSiteSpecies);
+				if (phosphoSiteDBFastaFile != null) {
+					phosphositeDB = new PhosphositeDB(phosphoSiteSpecies, phosphoSiteDBFastaFile);
+				} else {
+					phosphositeDB = new PhosphositeDB(phosphoSiteSpecies);
+				}
 			} else {
 				throw new IllegalArgumentException(
 						"If usePhosphoSiteDB is true, the species parameter is required and it is null or empty");
@@ -88,13 +93,12 @@ public class ProteoformDBIndexer extends DBIndexer {
 	}
 
 	/**
-	 * Cut a Fasta protein sequence according to params spec and index the
-	 * protein and generated sequences
+	 * Cut a Fasta protein sequence according to params spec and index the protein
+	 * and generated sequences
 	 *
 	 * Should be called once per unique Fasta sequence
 	 *
-	 * @param fasta
-	 *            fasta to index
+	 * @param fasta fasta to index
 	 * @throws IOException
 	 */
 	@Override
@@ -239,7 +243,8 @@ public class ProteoformDBIndexer extends DBIndexer {
 							start = modifiedPeptide.getProteinSequence().indexOf(sequenceAfterModification);
 							end = start + sequenceAfterModification.length() - 1;
 							final int resLeftI = start >= Constants.MAX_INDEX_RESIDUE_LEN
-									? start - Constants.MAX_INDEX_RESIDUE_LEN : 0;
+									? start - Constants.MAX_INDEX_RESIDUE_LEN
+									: 0;
 							final int resLeftLen = Math.min(Constants.MAX_INDEX_RESIDUE_LEN, start);
 							final StringBuilder sbLeft = new StringBuilder(Constants.MAX_INDEX_RESIDUE_LEN);
 							for (int ii = 0; ii < resLeftLen; ++ii) {
