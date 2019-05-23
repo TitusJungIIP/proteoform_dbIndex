@@ -90,8 +90,9 @@ public class Tests {
 		((DBIndexSearchParamsImpl) defaultDBIndexParams).setInMemoryIndex(inMemoryIndex);
 
 		final ProteoformDBIndexInterface dbIndex = new ProteoformDBIndexInterface(defaultDBIndexParams, useUniprot,
-				usePhosphoSite, "human", new UniprotProteinLocalRetriever(uniprotReleasesFolder, true, true, true),
-				null, numVariationsPerPeptide, null);
+				usePhosphoSite, "human", null,
+				new UniprotProteinLocalRetriever(uniprotReleasesFolder, true, true, true), null,
+				numVariationsPerPeptide, null);
 		final String peptideSeq = "MEEPQSDPSVEPPLSQETFSDLWK";
 		final Set<IndexedProtein> proteins = dbIndex.getProteins(peptideSeq);
 		Assert.assertFalse(proteins.isEmpty());
