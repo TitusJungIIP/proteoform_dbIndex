@@ -11,6 +11,7 @@ import edu.scripps.yates.proteoform_dbindex.model.IndexedSeqInternalWithPtms;
 import edu.scripps.yates.proteoform_dbindex.model.IndexedSequenceWithPTMs;
 import edu.scripps.yates.proteoform_dbindex.model.PTM;
 import edu.scripps.yates.utilities.bytes.DynByteBuffer;
+import edu.scripps.yates.utilities.fasta.FastaParser;
 import edu.scripps.yates.utilities.fasta.dbindex.DBIndexStoreException;
 import edu.scripps.yates.utilities.fasta.dbindex.ResidueInfo;
 
@@ -68,10 +69,15 @@ public class ByteArrayUtil {
 				}
 				proteinIds.add(proteinID);
 			}
-			String sequence;
 
-			sequence = proteinCache.getPeptideSequence(proteinIds.get(0), offset, length, ptms);
-			final IndexedSequenceWithPTMs ret = new IndexedSequenceWithPTMs(0, mass, sequence, "", "");
+			final String sequence = proteinCache.getPeptideSequence(proteinIds.get(0), offset, length, ptms);
+			final String cleanSequence = FastaParser.cleanSequence(sequence);
+			final IndexedSequenceWithPTMs ret = new IndexedSequenceWithPTMs(0, mass, cleanSequence, "", "");
+
+			ret.setIsModified(!ptms.isEmpty());
+			if (!ptms.isEmpty()) {
+				ret.setModSequence(sequence);
+			}
 			// ret.setProteinDescArray(proteinDescArray);
 			ret.setProteinIds(proteinIds);
 			for (final PTM ptm : ptms) {
