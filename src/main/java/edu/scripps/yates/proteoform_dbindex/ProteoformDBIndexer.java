@@ -101,14 +101,27 @@ public class ProteoformDBIndexer extends DBIndexer {
 	 * @param fasta fasta to index
 	 * @throws IOException
 	 */
+
+	/**
+	 * Cut a Fasta protein sequence according to params spec and index the protein
+	 * and generated sequences
+	 *
+	 * Should be called once per unique Fasta sequence
+	 *
+	 * @param fasta fasta to index
+	 * @throws IOException
+	 */
 	@Override
 	protected void cutSeq(final String proteinFastaHeader, String canonicalProtSeq) throws IOException {
 		// clear enzyme cache
 		getEnzyme().clearCache();
 		//
 		boolean isUniprot = true;
+		String protAccession = proteinFastaHeader;
+
 		final Accession accPair = FastaParser.getACC(proteinFastaHeader);
-		String protAccession = accPair.getAccession();
+		protAccession = accPair.getAccession();
+
 		String canonicalAccession = null;
 		if (accPair.getAccessionType() == AccessionType.UNKNOWN) {
 			logger.debug("Uniprot accession cannot be extracted from fasta header:  '" + proteinFastaHeader + "'");
@@ -175,6 +188,9 @@ public class ProteoformDBIndexer extends DBIndexer {
 
 			final Set<String> peptideKeys = new THashSet<String>();
 			for (final String peptideSequence : peptides) {
+				if (peptideSequence.startsWith("TQISLSTDEELPEKYTQH")) {
+					System.out.println(peptideSequence);
+				}
 				if (peptideInclusionList != null && !peptideInclusionList.contains(peptideSequence)) {
 					continue;
 				}
@@ -275,7 +291,8 @@ public class ProteoformDBIndexer extends DBIndexer {
 
 							// before adding the sequence:
 							final String key = proteinAccession + "|" + modifiedPeptide.getSequenceWithModification()
-									+ "|" + modifiedPeptide.getProteinSequence().indexOf(sequenceAfterModification) + 1;
+									+ "|"
+									+ (modifiedPeptide.getProteinSequence().indexOf(sequenceAfterModification) + 1);
 							if (peptideKeys.contains(key)) {
 								continue;
 							} else {
@@ -314,6 +331,11 @@ public class ProteoformDBIndexer extends DBIndexer {
 			enzyme.setCacheEnabled(true);
 		}
 		return enzyme;
+	}
+
+	@Override
+	public boolean isRetrieveFastaIsoformsFromMainForms() {
+		return true;
 	}
 
 	private void mergeMaps(Map<String, List<Proteoform>> target, Map<String, List<Proteoform>> toMerge) {
