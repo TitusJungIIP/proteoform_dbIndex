@@ -2,6 +2,7 @@ package edu.scripps.yates.proteoform_dbindex.util;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,6 +13,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.math3.util.CombinatoricsUtils;
+import org.apache.log4j.Logger;
 import org.proteored.miapeapi.psimod.PSIModOBOPlainTextReader;
 
 import com.compomics.util.general.UnknownElementMassException;
@@ -39,6 +41,7 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 import gnu.trove.set.hash.THashSet;
 
 public class ProteoformDBIndexUtil {
+	private final static Logger log = Logger.getLogger(ProteoformDBIndexUtil.class);
 	private final static String MISSING_AT = "_missing_at_";
 	private static ProteoformDBIndexUtil instance;
 	private final static FormulaCalculator calc = new FormulaCalculator();
@@ -255,8 +258,7 @@ public class ProteoformDBIndexUtil {
 	 * @param peptideSeq
 	 * @param peptideInitInProtein
 	 * @param nonIsoformsProteoformsByPositionInMainProtein
-	 * @param isoform
-	 *            can be null
+	 * @param isoform                                       can be null
 	 * @return
 	 * @throws UnknownElementMassException
 	 */
@@ -277,8 +279,7 @@ public class ProteoformDBIndexUtil {
 	 * @param peptideSeq
 	 * @param peptideInitInOriginalProtein
 	 * @param proteoformsByPositionInProtein
-	 * @param isoform
-	 *            can be null
+	 * @param isoform                        can be null
 	 * @return
 	 * @throws UnknownElementMassException
 	 */
@@ -294,9 +295,12 @@ public class ProteoformDBIndexUtil {
 		final int peptideLength = peptideSeq.length();
 		final int peptideEndInProtein = peptideInitInOriginalProtein + peptideLength - 1;
 		for (final Integer proteoformPositionInProtein : positionsInOrder) {
+			// if the position of the sequence variance is after the end of the peptide in
+			// the protein, skip it
 			if (peptideEndInProtein < proteoformPositionInProtein) {
 				break;
 			}
+			// if the position of the sequence variance goes into the peptide
 			if (proteoformPositionInProtein >= peptideInitInOriginalProtein
 					&& proteoformPositionInProtein <= peptideEndInProtein) {
 				final List<Proteoform> proteoforms = proteoformsByPositionInProtein.get(proteoformPositionInProtein);
@@ -345,8 +349,7 @@ public class ProteoformDBIndexUtil {
 	 * 
 	 * @param isoformPeptideSeq
 	 * @param proteoformsByPositionInMainProtein
-	 * @param isoform
-	 *            is not null
+	 * @param isoform                            is not null
 	 * 
 	 * @return
 	 * @throws UnknownElementMassException
@@ -419,14 +422,16 @@ public class ProteoformDBIndexUtil {
 
 	}
 
-	public Set<SequenceWithModification> getAllCombinationsForPeptide(String peptideSeq, String proteinSequence,
+	public List<SequenceWithModification> getAllCombinationsForPeptide(String peptideSeq, String proteinSequence,
 			int positionOfPeptideInProtein, MyEnzyme enzyme, List<SequenceChange> sequenceChanges,
-			int maxNumVariationsPerPeptide, ExtendedAssignMass extendedAssignMass) throws IOException {
+			int maxNumVariationsPerPeptide, ExtendedAssignMass extendedAssignMass, Set<String> peptidesProcessed)
+			throws IOException {
 		staticCallDepp++;
 		if (staticCallDepp > 4) {
-			System.out.println("asdf");
+//			log.info("deep call " + staticCallDepp);
 		}
-		final Set<SequenceWithModification> ret = new THashSet<SequenceWithModification>();
+		peptidesProcessed.add(peptideSeq);
+		final List<SequenceWithModification> ret = new ArrayList<SequenceWithModification>();
 		// check whether the peptide has the correct number of
 		// allowed misscleavages
 		if (getNumMissedClavages(peptideSeq, enzyme) <= enzyme.getMiscleavages()
@@ -483,8 +488,38 @@ public class ProteoformDBIndexUtil {
 								listOfSequenceChangesToApply, positionOfPeptideInProtein - 1, indexes,
 								extendedAssignMass, proteinSequence);
 						final String newProteinSequence = modifiedProteinSequence.getSequenceAfterModification();
-						final List<String> cleaves = enzyme.cleave(newProteinSequence,
-								ProteoformDBIndexer.MIN_PEPTIDE_LENGHT, ProteoformDBIndexer.MAX_PEPTIDE_LENGTH);
+						final Collection<String> cleaves = enzyme.cleave(newProteinSequence,
+								ProteoformDBIndexer.MIN_PEPTIDE_LENGHT, ProteoformDBIndexer.MAX_PEPTIDE_LENGTH,
+								new THashSet<String>());
+						// only keep the ones overlapping with the position of the
+//						final Iterator<String> iterator = cleaves.iterator();
+//						while (iterator.hasNext()) {
+//							final String cleave = iterator.next();
+//							final TIntArrayList starts = StringUtils.allPositionsOf(newProteinSequence, cleave);
+//							boolean overlaps = false;
+//							for (final int start : starts.toArray()) {
+//								final int end = start + cleave.length();
+//								final int startPositionOfOriginalPeptideOnProtein = positionOfPeptideInProtein;
+//								final int endPositionOfOriginalPeptideOnProtein = startPositionOfOriginalPeptideOnProtein
+//										+ peptideSeq.length();
+//								if (start >= startPositionOfOriginalPeptideOnProtein
+//										&& start <= endPositionOfOriginalPeptideOnProtein) {
+//									overlaps = true;
+//								}
+//								if (start <= startPositionOfOriginalPeptideOnProtein
+//										&& end >= startPositionOfOriginalPeptideOnProtein) {
+//									overlaps = true;
+//								}
+//								if (start <= endPositionOfOriginalPeptideOnProtein
+//										&& end >= startPositionOfOriginalPeptideOnProtein) {
+//									overlaps = true;
+//								}
+//							}
+//							if (!overlaps) {
+//								iterator.remove();
+//							}
+//						}
+
 						// then check if one of the cleavage products is this
 						// peptide
 						if (peptideIsInCleavagesProducts(sequenceChanged.getSequenceAfterModification(), cleaves)) {
@@ -498,12 +533,21 @@ public class ProteoformDBIndexUtil {
 							for (final String newPeptideSequence : newPeptides) {
 								final String newPeptideSequenceOriginal = getOriginalPeptideSequence(
 										sequenceChanged.getSequenceWithModification(), newPeptideSequence);
-								if (newPeptideSequenceOriginal.equals(peptideSeq)) {
+								if (
+//										newPeptideSequenceOriginal.equals(peptideSeq) 										|| 
+								peptidesProcessed.contains(newPeptideSequenceOriginal)) {
+									continue;
+								}
+								if (!proteinSequence.contains(newPeptideSequenceOriginal)) {
+									// this happens when the peptide sequenceChanged.getSequenceAfterModification()
+									// is in several positions in the protein sequence. then, the extension of that
+									// peptide may not match with the protein<br>
+									// just do not use it
 									continue;
 								}
 								ret.addAll(getAllCombinationsForPeptide(newPeptideSequenceOriginal, proteinSequence,
 										positionOfPeptideInProtein, enzyme, listOfSequenceChangesToApply,
-										maxNumVariationsPerPeptide, extendedAssignMass));
+										maxNumVariationsPerPeptide, extendedAssignMass, peptidesProcessed));
 							}
 						}
 
@@ -546,44 +590,93 @@ public class ProteoformDBIndexUtil {
 	/**
 	 * Having a peptide that changed as<br>
 	 * ABCD[R->C] <br>
-	 * and a newPeptide that is the result of the change and something else
-	 * as:<br>
+	 * and a newPeptide that is the result of the change and something else as:<br>
 	 * ABCDCEFGK<br>
 	 * returns the sequence ABCDREFGK where the change has not been applied yet
+	 * Takes into account that it may have multiple variants and PTM changes are
+	 * ignored
 	 * 
 	 * @param sequenceChanged
 	 * @param newPeptideSequence
 	 * @return
 	 */
-	private static String getOriginalPeptideSequence(String sequenceWithModification, String newPeptideSequence) {
+	protected static String getOriginalPeptideSequence(String sequenceWithModification, String newPeptideSequence) {
 		final StringBuilder sb = new StringBuilder();
 		// common beginning would be ABDC in the example
+
 		final String commonBeginning = StringUtils.getCommonBeginning(sequenceWithModification, newPeptideSequence);
 
 		sb.append(commonBeginning);
-		// change string would be R->C in the example
-		final String changeString = sequenceWithModification.substring(sequenceWithModification.indexOf("[") + 1,
-				sequenceWithModification.indexOf("]"));
-		// change would be C in the example
-		String change = "";
-		if (changeString.contains("->")) {
-			// original would be R in the example
-			final String original = changeString.substring(0, changeString.indexOf("->"));
-			sb.append(original);
-			if (!changeString.endsWith("->")) {
-				change = changeString.substring(changeString.indexOf("->") + 2);
+		int index1 = commonBeginning.length();
+		int index2 = commonBeginning.length();
+		boolean variantOpen = false;
+		boolean variantOriginal = false;
+		boolean ptmOpen = false;
+		while (index2 < newPeptideSequence.length()) {
+			if (index1 < sequenceWithModification.length()) {
+				final char c1 = sequenceWithModification.charAt(index1);
+				if (c1 == '[') {
+					// check whether is a variant modification or a PTM
+					final int indexOf = sequenceWithModification.indexOf("->", index1);
+					if (indexOf == -1 || indexOf > sequenceWithModification.indexOf("]", index1)) {
+						// it is a PTM
+						ptmOpen = true;
+					}
+					variantOpen = true;
+					variantOriginal = true;
+
+				} else if (c1 == ']') {
+					variantOpen = false;
+					ptmOpen = false;
+					variantOriginal = false;
+
+				} else if (c1 == '-') {
+					// do nothing
+				} else if (c1 == '>') {
+					variantOriginal = false;
+				} else {
+					if (!ptmOpen) {
+						if (!variantOpen || (variantOpen && variantOriginal)) {
+							sb.append(c1);
+						}
+						if (!variantOpen || variantOpen && !variantOriginal) {
+							index2++;
+						}
+
+					}
+				}
+			} else {
+				sb.append(newPeptideSequence.charAt(index2));
+				index2++;
 			}
+			index1++;
 
 		}
-		sb.append(newPeptideSequence.substring(commonBeginning.length() + change.length()));
 		return sb.toString();
+//		// change string would be R->C in the example
+//		final String changeString = sequenceWithModification.substring(sequenceWithModification.indexOf("[") + 1,
+//				sequenceWithModification.indexOf("]"));
+//		// change would be C in the example
+//		String change = "";
+//		if (changeString.contains("->")) {
+//			// original would be R in the example
+//			final String original = changeString.substring(0, changeString.indexOf("->"));
+//			sb.append(original);
+//			if (!changeString.endsWith("->")) {
+//				change = changeString.substring(changeString.indexOf("->") + 2);
+//			}
+//
+//		}
+//		sb.append(newPeptideSequence.substring(commonBeginning.length() + change.length()));
+////		final String ret = FastaParser.cleanSequenceAndNotApplySequenceVariances(sequenceWithModification);
+//		return ret;
 	}
 
 	public static void main(String[] arg) {
 		System.out.println(getOriginalPeptideSequence("ABCD[R->C]", "ABCDCEFGK"));
 	}
 
-	private List<String> getCleavageProductsStartingWithPeptide(String peptideSeq, List<String> cleaves) {
+	private List<String> getCleavageProductsStartingWithPeptide(String peptideSeq, Collection<String> cleaves) {
 		final List<String> ret = new ArrayList<String>();
 		for (final String cleavageProduct : cleaves) {
 			if (cleavageProduct.startsWith(peptideSeq)) {
@@ -593,13 +686,8 @@ public class ProteoformDBIndexUtil {
 		return ret;
 	}
 
-	private boolean peptideIsInCleavagesProducts(String peptide, List<String> cleaves) {
-		for (final String cleavageProduct : cleaves) {
-			if (cleavageProduct.equals(peptide)) {
-				return true;
-			}
-		}
-		return false;
+	private boolean peptideIsInCleavagesProducts(String peptide, Collection<String> cleaves) {
+		return cleaves.contains(peptide);
 	}
 
 	private SequenceWithModification getModifiedSequence(String peptideSeq, List<SequenceChange> sequenceChanges,
@@ -639,9 +727,12 @@ public class ProteoformDBIndexUtil {
 				break;
 			}
 			if (currentSequenceChange != null
-					&& index + 1 < currentSequenceChange.getFirstPositionOfChangeInPeptide() + offset) {
-				sb.append(peptideSeq.substring(index,
-						currentSequenceChange.getFirstPositionOfChangeInPeptide() + offset - 1));
+					&& index + 1 < currentSequenceChange.getFirstPositionOfChangeInPeptide() + offset
+					&& peptideSeq.length() > currentSequenceChange.getFirstPositionOfChangeInPeptide() + offset - 1) {
+
+				final String substring = peptideSeq.substring(index,
+						currentSequenceChange.getFirstPositionOfChangeInPeptide() + offset - 1);
+				sb.append(substring);
 				index = currentSequenceChange.getFirstPositionOfChangeInPeptide() + offset - 1;
 
 			}
@@ -672,7 +763,9 @@ public class ProteoformDBIndexUtil {
 
 		final SequenceWithModification peptideWithModification = new SequenceWithModification(peptideSeq, sb.toString(),
 				extendedAssignMass, proteinSequence);
-
+		if (peptideWithModification.getSequenceBeforeModification().equals("VLATVTKPVGGDQNGGTRVVK")) {
+			log.info(peptideWithModification);
+		}
 		return peptideWithModification;
 	}
 

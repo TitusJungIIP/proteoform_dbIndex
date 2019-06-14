@@ -1,10 +1,10 @@
 package edu.scripps.yates.proteoform_dbindex.util;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 
 import org.apache.commons.lang.math.IntRange;
 
-public class SetOfIntRanges extends HashSet<IntRange> {
+public class SetOfIntRanges extends ArrayList<IntRange> {
 
 	/**
 	 * 

@@ -3,6 +3,7 @@ package edu.scripps.yates.proteoform_dbindex;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -132,8 +133,8 @@ public class ProteoformDBIndexer extends DBIndexer {
 			canonicalAccession = FastaParser.getNoIsoformAccession(protAccession);
 		}
 
-		final List<String> digestProtein = digestProtein(canonicalProtSeq);
-		final List<String> canonicalProteinPeptides = digestProtein;
+		final Collection<String> digestProtein = digestProtein(canonicalProtSeq);
+		final Collection<String> canonicalProteinPeptides = digestProtein;
 
 		Map<String, List<Proteoform>> proteoformMap = new THashMap<String, List<Proteoform>>();
 		if (useUniprot && isUniprot) {
@@ -177,18 +178,18 @@ public class ProteoformDBIndexer extends DBIndexer {
 			// which is when we apply all the nonIsoforms to the main
 			// protein entry
 
-			List<String> peptides;
+			Collection<String> peptides;
 			if (isoform == null) {
 				peptides = new ArrayList<String>();
 				peptides.addAll(canonicalProteinPeptides);
 			} else {
 				// digest isoform sequence
-				peptides = getEnzyme().cleave(proteinSequence, MIN_PEPTIDE_LENGHT, MAX_PEPTIDE_LENGTH);
+				peptides = getEnzyme().cleave(proteinSequence, MIN_PEPTIDE_LENGHT, MAX_PEPTIDE_LENGTH, null);
 			}
 
 			final Set<String> peptideKeys = new THashSet<String>();
 			for (final String peptideSequence : peptides) {
-				if (peptideSequence.startsWith("TQISLSTDEELPEKYTQH")) {
+				if (peptideSequence.startsWith("TQISLSTDEELPEKYTQ")) {
 					System.out.println(peptideSequence);
 				}
 				if (peptideInclusionList != null && !peptideInclusionList.contains(peptideSequence)) {
@@ -206,14 +207,16 @@ public class ProteoformDBIndexer extends DBIndexer {
 						logger.debug("Skipping peptide '" + peptideSequence + "' by filter");
 						break;
 					}
-
+					if (peptideSequence.equals("VLATVTKPVGGDK")) {
+						logger.info(peptideSequence);
+					}
 					final List<SequenceChange> sequenceChanges = ProteoformDBIndexUtil.getInstance()
 							.getSequenceChangesInPeptide(peptideSequence, proteinSequence.indexOf(peptideSequence) + 1,
 									nonIsoformsProteoformsByPositionInMainProtein, isoform);
-					final Set<SequenceWithModification> modifiedPeptides = ProteoformDBIndexUtil.getInstance()
+					final List<SequenceWithModification> modifiedPeptides = ProteoformDBIndexUtil.getInstance()
 							.getAllCombinationsForPeptide(peptideSequence, proteinSequence,
 									proteinSequence.indexOf(peptideSequence) + 1, getEnzyme(), sequenceChanges,
-									maxNumVariationsPerPeptide, extendedAssignMass);
+									maxNumVariationsPerPeptide, extendedAssignMass, new THashSet<String>());
 
 					for (final SequenceWithModification modifiedPeptide : modifiedPeptides) {
 						final String sequenceAfterModification = modifiedPeptide.getSequenceAfterModification();
@@ -256,8 +259,9 @@ public class ProteoformDBIndexer extends DBIndexer {
 							continue; // move to new start position
 						} else if (filterResult.equals(FilterResult.INCLUDE)) {
 
-							start = modifiedPeptide.getProteinSequence().indexOf(sequenceAfterModification);
-							end = start + sequenceAfterModification.length() - 1;
+							start = modifiedPeptide.getProteinSequence()
+									.indexOf(modifiedPeptide.getSequenceBeforeModification());
+							end = start + modifiedPeptide.getSequenceBeforeModification().length() - 1;
 							final int resLeftI = start >= Constants.MAX_INDEX_RESIDUE_LEN
 									? start - Constants.MAX_INDEX_RESIDUE_LEN
 									: 0;
@@ -291,17 +295,28 @@ public class ProteoformDBIndexer extends DBIndexer {
 
 							// before adding the sequence:
 							final String key = proteinAccession + "|" + modifiedPeptide.getSequenceWithModification()
-									+ "|"
-									+ (modifiedPeptide.getProteinSequence().indexOf(sequenceAfterModification) + 1);
+									+ "|" + (modifiedPeptide.getProteinSequence()
+											.indexOf(modifiedPeptide.getSequenceBeforeModification()) + 1);
 							if (peptideKeys.contains(key)) {
 								continue;
 							} else {
 								peptideKeys.add(key);
 							}
-
-							indexStore.addSequence(precMass, proteinSequence.indexOf(peptideSequence),
-									peptideSequence.length(), modifiedPeptide.getSequenceWithModification(), resLeft,
-									resRight, proteinId);
+							if (modifiedPeptide.getSequenceWithModification().startsWith("TQISLSTDEELPEKYTQRR")) {
+								logger.info("asdf");
+							}
+							if (Double.compare(precMass, 665.3505890660001) == 0
+									&& modifiedPeptide.getSequenceBeforeModification().length() == 7
+									&& proteinId == 7753) {
+								logger.info("asdf");
+							}
+							if (proteinId == 7753) {
+								logger.info("asdf");
+							}
+							indexStore.addSequence(precMass,
+									proteinSequence.indexOf(modifiedPeptide.getSequenceBeforeModification()),
+									modifiedPeptide.getSequenceBeforeModification().length(),
+									modifiedPeptide.getSequenceWithModification(), resLeft, resRight, proteinId);
 						}
 					}
 					// System.out.println("\t" +
@@ -319,8 +334,8 @@ public class ProteoformDBIndexer extends DBIndexer {
 
 	}
 
-	private List<String> digestProtein(String sequence) {
-		final List<String> peptides = getEnzyme().cleave(sequence, MIN_PEPTIDE_LENGHT, MAX_PEPTIDE_LENGTH);
+	private Collection<String> digestProtein(String sequence) {
+		final Collection<String> peptides = getEnzyme().cleave(sequence, MIN_PEPTIDE_LENGHT, MAX_PEPTIDE_LENGTH, null);
 		return peptides;
 	}
 

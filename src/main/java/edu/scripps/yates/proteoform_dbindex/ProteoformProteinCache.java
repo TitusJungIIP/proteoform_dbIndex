@@ -57,7 +57,12 @@ public class ProteoformProteinCache extends ProteinCache {
 		}
 
 		try {
-			final String peptideSeq = protSeq.substring(seqOffset, seqOffset + seqLen);
+			String peptideSeq = null;
+			try {
+				peptideSeq = protSeq.substring(seqOffset, seqOffset + seqLen);
+			} catch (final StringIndexOutOfBoundsException e) {
+				e.printStackTrace();
+			}
 			return applyPTMs(peptideSeq, ptms);
 		} catch (final Exception e) {
 			e.printStackTrace();

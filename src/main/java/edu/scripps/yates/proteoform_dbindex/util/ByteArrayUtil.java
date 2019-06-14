@@ -25,7 +25,7 @@ public class ByteArrayUtil {
 			byte[] slice = Arrays.copyOfRange(data, start, end);
 			final double mass = DynByteBuffer.toDouble(slice);
 
-			// offset (short, 2 bytes)
+			// offset (char, 2 bytes)
 			start = end;
 			end = start + 2;
 			slice = Arrays.copyOfRange(data, start, end);
@@ -71,7 +71,7 @@ public class ByteArrayUtil {
 			}
 
 			final String sequence = proteinCache.getPeptideSequence(proteinIds.get(0), offset, length, ptms);
-			final String cleanSequence = FastaParser.cleanSequence(sequence);
+			final String cleanSequence = FastaParser.cleanSequenceAndApplySequenceVariances(sequence);
 			final IndexedSequenceWithPTMs ret = new IndexedSequenceWithPTMs(0, mass, cleanSequence, "", "");
 
 			ret.setIsModified(!ptms.isEmpty());

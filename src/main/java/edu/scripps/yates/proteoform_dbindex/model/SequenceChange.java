@@ -115,4 +115,11 @@ public class SequenceChange implements Comparable<SequenceChange> {
 		return positionInPeptide.getMinimumInteger();
 	}
 
+	@Override
+	public String toString() {
+		return "SequenceChange [positionInPeptide=" + positionInPeptide + ", original=" + original + ", change="
+				+ change + ", ptm=" + ptm + ", massChange=" + massChange + ", proteoformID=" + proteoformID
+				+ ", proteoformType=" + proteoformType + "]";
+	}
+
 }

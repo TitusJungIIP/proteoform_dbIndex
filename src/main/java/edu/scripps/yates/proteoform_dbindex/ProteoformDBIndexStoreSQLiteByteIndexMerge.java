@@ -8,8 +8,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.mortbay.log.Log;
-
 import edu.scripps.yates.dbindex.Constants;
 import edu.scripps.yates.dbindex.DBIndexStoreSQLiteByteIndexMerge;
 import edu.scripps.yates.proteoform_dbindex.model.ExtendedAssignMass;
@@ -270,12 +268,17 @@ public class ProteoformDBIndexStoreSQLiteByteIndexMerge extends DBIndexStoreSQLi
 		try {
 			totalSeqCount++;
 			final List<PTM> ptms = PTM.extractPTMsFromSequence(sequence, extendedAssignMass);
-			if (seqOffset > 32767) {
-				Log.info("track this downt to bytes");
+			if (seqOffset > 32767 || seqOffset < 0) {
+				logger.info("track this downt to bytes");
 			}
 			new DynByteBuffer();
 			final char seqOffsetChar = DynByteBuffer.toChar(DynByteBuffer.toByteArray(seqOffset));
-			updateCachedData(precMass, seqOffsetChar, (short) seqLength, (int) proteinId, ptms);
+			final short int1 = DynByteBuffer.toShort(DynByteBuffer.toByteArray(seqOffsetChar));
+			if (int1 < 0) {
+				logger.info("Some error ocurred! 2 bytes of offset are overflown");
+			}
+			updateCachedData(precMass, seqOffsetChar, Integer.valueOf(seqLength).shortValue(),
+					Long.valueOf(proteinId).intValue(), ptms);
 
 			if (true) {
 				// despite commiting each sequence, commit and clear all after
@@ -345,4 +348,5 @@ public class ProteoformDBIndexStoreSQLiteByteIndexMerge extends DBIndexStoreSQLi
 		}
 		super.stopAddSeq();
 	}
+
 }
