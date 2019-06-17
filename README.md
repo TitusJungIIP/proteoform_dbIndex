@@ -32,3 +32,11 @@ Using maven, add this to your prom.xml file:
 # How to use it
 
 This module contains some test classes with some examples using test data. You can find it on the */src/test/java* folder, at the *ProteoformDBIndexTest.java* java file.  
+
+Firstly, you may know the steps this indexing is doing for every FASTA file:
+ * It reads the input parameters file. The input parameters file is one of the parameters file used by BlazzMass search engine. However, many of the parameters included on it, are ignored, and so the only ones used in the indexing are (`with some example values`):
+   - *database_name*: Full path to FASTA file. `D:\\Salva\\git_projects\\proteoform_dbindex\\src\\test\\resources\\Q8WZ42.fasta`
+   - *enzyme_residues*: Amino acids in which the enzyme should cut. `KR`.
+   - *miscleavage*: Number of allowed missed cleavages. `3`.
+   - *enzyme_nocut_residues*: amino acid that if present before the cleavage amino acid, will make the cleavage to not ocurr.
+   
