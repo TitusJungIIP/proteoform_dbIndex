@@ -34,8 +34,8 @@ public class ProteoformDBIndexTest {
 			"D:\\Salva\\git_projects\\proteoform_dbindex\\src\\test\\resources\\uniprotKB");
 
 	// uniprotVersion
-	// null for latest version or "2019_03" for March 2019 version, for example
-	private final String uniprotVersion = null;
+	// null for latest version or "2019_05" for May 2019 version, for example
+	private final String uniprotVersion = null;// "2019_05";
 
 	// maxNumVariationsPerPeptide
 	// maximum number of variations per peptide allowed
@@ -58,95 +58,6 @@ public class ProteoformDBIndexTest {
 
 		// phosphoSiteSpecies can be human, rat, cow, etc...
 		phosphoSiteSpecies = "human";
-
-	}
-
-	@Test
-	public void testingProteoformIndex_P42681() throws IOException {
-		// paramFile with input FASTA file, missedcleavages, etc.
-		// this file is pointing to P42681.fasta file
-		// change the paths correspondingly
-		final File paramFile = new ClassPathResource("blazmass_P42681.params").getFile();
-		// create index
-		final boolean usePhosphoSite = false;
-		final ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile, true,
-				usePhosphoSite, phosphoSiteSpecies, phosphoSiteDBFile,
-				new UniprotProteinLocalRetriever(uniprotReleasesFolder, true), uniprotVersion,
-				maxNumVariationsPerPeptide, peptideInclusionList);
-
-		try {
-			System.out.println();
-			System.out.println("Looking for the proteins from peptide " + "ALYDFLPR");
-			final Set<IndexedProtein> proteins = proteoformDBIndex.getProteins("ALYDFLPR");
-			for (final IndexedProtein indexedProtein : proteins) {
-				System.out.println(indexedProtein.getAccession());
-				System.out.println(indexedProtein.getFastaDefLine());
-			}
-			double parentMass = IndexUtil.calculateMass("ALYDFLPR");
-			System.out.println();
-			System.out.println("Looking for the mass " + parentMass + " that is from peptide " + "ALYDFLPR");
-			List<IndexedSequence> sequences = proteoformDBIndex.getSequences(parentMass, 0.0001);
-			for (final IndexedSequence indexedSequence : sequences) {
-				System.out.println(
-						indexedSequence.getSequence() + "\t" + IndexUtil.calculateMass(indexedSequence.getSequence())
-								+ "\t" + +indexedSequence.getMass() + "\t" + parentMass);
-			}
-
-			final double phosphorilatedParentMass = parentMass + 79.966331;
-			System.out.println();
-			System.out.println("Looking for the mass " + phosphorilatedParentMass + " that is from peptide "
-					+ "ALYDFLPR" + " plus a phosphorilation");
-			final List<IndexedSequence> phosphorilatedSequences = proteoformDBIndex
-					.getSequences(phosphorilatedParentMass, 0.0001);
-			Assert.assertFalse(phosphorilatedSequences.isEmpty());
-			for (final IndexedSequence indexedSequence : phosphorilatedSequences) {
-				if (indexedSequence instanceof IndexedSequenceWithPTMs) {
-					final IndexedSequenceWithPTMs indexedSequenceWithPTM = (IndexedSequenceWithPTMs) indexedSequence;
-					System.out.println(indexedSequenceWithPTM.getSequence() + "\t"
-							+ IndexUtil.calculateMass(indexedSequence.getSequence()) + "\t"
-							+ indexedSequenceWithPTM.getModSequence() + "\t" + indexedSequenceWithPTM.getMass() + "\t"
-							+ phosphorilatedParentMass);
-				} else {
-					System.out.println(indexedSequence.getSequence() + "\t"
-							+ IndexUtil.calculateMass(indexedSequence.getSequence()) + "\t"
-							+ indexedSequence.getModSequence() + "\t" + +indexedSequence.getMass() + "\t"
-							+ phosphorilatedParentMass);
-				}
-			}
-
-			parentMass = IndexUtil.calculateMass("TQISLSTDEELPEKYTQRR");
-			System.out.println();
-			System.out.println("Looking for the mass " + parentMass + " that is from peptide " + "TQISLSTDEELPEKYTQRR");
-			sequences = proteoformDBIndex.getSequences(parentMass, 0.0001);
-			for (final IndexedSequence indexedSequence : sequences) {
-				System.out.println(indexedSequence.getSequence() + "\t"
-						+ IndexUtil.calculateMass(indexedSequence.getSequence()) + "\t"
-						+ indexedSequence.getModSequence() + "\t" + +indexedSequence.getMass() + "\t" + parentMass);
-			}
-
-			parentMass = IndexUtil.calculateMass("TQISLSTDEELPEKYTQHR");
-			System.out.println();
-			System.out.println("Looking for the mass " + parentMass + " that is from peptide " + "TQISLSTDEELPEKYTQHR");
-			sequences = proteoformDBIndex.getSequences(parentMass, 0.0001);
-			for (final IndexedSequence indexedSequence : sequences) {
-				System.out.println(indexedSequence.getSequence() + "\t"
-						+ IndexUtil.calculateMass(indexedSequence.getSequence()) + "\t"
-						+ indexedSequence.getModSequence() + "\t" + +indexedSequence.getMass() + "\t" + parentMass);
-				final List<Integer> proteinIds = indexedSequence.getProteinIds();
-				for (final Integer proteinId : proteinIds) {
-					final IndexedProtein indexedProtein = proteoformDBIndex.getIndexedProteinById(proteinId);
-					System.out.println("protein id: " + proteinId + "\t" + indexedProtein.getAccession() + "\t"
-							+ indexedProtein.getFastaDefLine());
-				}
-			}
-
-		} catch (final Exception e) {
-			e.printStackTrace();
-			fail();
-		} catch (final DBIndexStoreException e) {
-			e.printStackTrace();
-			fail();
-		}
 
 	}
 
@@ -244,40 +155,42 @@ public class ProteoformDBIndexTest {
 		final File paramFile = new ClassPathResource("blazmass_Q13523.params").getFile();
 		// create index
 		final boolean usePhosphoSite = false;
+		final UniprotProteinLocalRetriever uplr = new UniprotProteinLocalRetriever(uniprotReleasesFolder, true);
 		final ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile, true,
-				usePhosphoSite, phosphoSiteSpecies, phosphoSiteDBFile,
-				new UniprotProteinLocalRetriever(uniprotReleasesFolder, true), uniprotVersion,
-				maxNumVariationsPerPeptide, peptideInclusionList);
+				usePhosphoSite, phosphoSiteSpecies, phosphoSiteDBFile, uplr, uniprotVersion, maxNumVariationsPerPeptide,
+				peptideInclusionList);
 
 		try {
 			System.out.println();
-			System.out.println("Looking for the proteins from peptide " + "ALYDFLPR");
-			final Set<IndexedProtein> proteins = proteoformDBIndex.getProteins("ALYDFLPR");
+			System.out.println("Looking for the proteins from peptide " + "SPSPDDILERVAADVKEYER");
+			Set<IndexedProtein> proteins = proteoformDBIndex.getProteins("SPSPDDILERVAADVKEYER");
 			for (final IndexedProtein indexedProtein : proteins) {
 				System.out.println(indexedProtein.getAccession());
 				System.out.println(indexedProtein.getFastaDefLine());
 			}
-			double parentMass = IndexUtil.calculateMass("SPSPDDVLERVAADVKEYER");
 			System.out.println();
-			System.out
-					.println("Looking for the mass " + parentMass + " that is from peptide " + "SPSPDDVLERVAADVKEYER");
-			List<IndexedSequence> sequences = proteoformDBIndex.getSequences(parentMass, 0.0001);
+			System.out.println("Looking for the proteins from peptide with natural variance " + "SPSPDDVLERVAADVKEYER");
+			proteins = proteoformDBIndex.getProteins("SPSPDDVLERVAADVKEYER");
+			for (final IndexedProtein indexedProtein : proteins) {
+				System.out.println(indexedProtein.getAccession());
+				System.out.println(indexedProtein.getFastaDefLine());
+			}
+			final double parentMass = IndexUtil.calculateMass("SPSPDDVLERVAADVKEYER");
+			System.out.println();
+			System.out.println("Looking for the mass " + parentMass + " that is from peptide with natural variance "
+					+ "SPSPDDVLERVAADVKEYER");
+			final List<IndexedSequence> sequences = proteoformDBIndex.getSequences(parentMass, 0.0001);
 			for (final IndexedSequence indexedSequence : sequences) {
 				System.out.println(indexedSequence.getSequence() + "\t"
 						+ IndexUtil.calculateMass(indexedSequence.getSequence()) + "\t"
 						+ indexedSequence.getModSequence() + "\t" + indexedSequence.getMass() + "\t" + parentMass);
-				final List<Integer> proteinIds = indexedSequence.getProteinIds();
-				for (final Integer proteinId : proteinIds) {
-					final IndexedProtein indexedProtein = proteoformDBIndex.getIndexedProteinById(proteinId);
-					System.out.println("protein id: " + proteinId + "\t" + indexedProtein.getAccession() + "\t"
-							+ indexedProtein.getFastaDefLine());
-				}
 			}
 
 			final double phosphorilatedParentMass = parentMass + 79.966331;
 			System.out.println();
-			System.out.println("Looking for the mass " + phosphorilatedParentMass + " that is from peptide "
-					+ "ALYDFLPR" + " plus a phosphorilation");
+			System.out.println(
+					"Looking for the mass " + phosphorilatedParentMass + " that is from peptide with natural variance "
+							+ "SPSPDDVLERVAADVKEYER" + " plus a phosphorilation");
 			final List<IndexedSequence> phosphorilatedSequences = proteoformDBIndex
 					.getSequences(phosphorilatedParentMass, 0.0001);
 			Assert.assertFalse(phosphorilatedSequences.isEmpty());
@@ -294,18 +207,13 @@ public class ProteoformDBIndexTest {
 									+ "\t" + "\t" + indexedSequence.getModSequence() + "\t" + +indexedSequence.getMass()
 									+ "\t" + phosphorilatedParentMass);
 				}
-				final List<Integer> proteinIds = indexedSequence.getProteinIds();
-				for (final Integer proteinId : proteinIds) {
-					final IndexedProtein indexedProtein = proteoformDBIndex.getIndexedProteinById(proteinId);
-					System.out.println("protein id: " + proteinId + "\t" + indexedProtein.getAccession() + "\t"
-							+ indexedProtein.getFastaDefLine());
-				}
 			}
 
 			final double doublyPhosphorilatedParentMass = parentMass + 79.966331 + 79.966331;
 			System.out.println();
-			System.out.println("Looking for the mass " + doublyPhosphorilatedParentMass + " that is from peptide "
-					+ "ALYDFLPR" + " plus 2 phosphorilations");
+			System.out.println("Looking for the mass " + doublyPhosphorilatedParentMass
+					+ " that is from peptide with natural variance" + "SPSPDDVLERVAADVKEYER"
+					+ " plus 2 phosphorilations");
 			final List<IndexedSequence> doublePhosphorilatedSequences = proteoformDBIndex
 					.getSequences(doublyPhosphorilatedParentMass, 0.0001);
 			Assert.assertFalse(doublePhosphorilatedSequences.isEmpty());
@@ -321,44 +229,6 @@ public class ProteoformDBIndexTest {
 							indexedSequence.getSequence() + IndexUtil.calculateMass(indexedSequence.getSequence())
 									+ "\t" + "\t" + indexedSequence.getModSequence() + "\t" + +indexedSequence.getMass()
 									+ "\t" + phosphorilatedParentMass);
-				}
-				final List<Integer> proteinIds = indexedSequence.getProteinIds();
-				for (final Integer proteinId : proteinIds) {
-					final IndexedProtein indexedProtein = proteoformDBIndex.getIndexedProteinById(proteinId);
-					System.out.println("protein id: " + proteinId + "\t" + indexedProtein.getAccession() + "\t"
-							+ indexedProtein.getFastaDefLine());
-				}
-			}
-
-			parentMass = IndexUtil.calculateMass("TQISLSTDEELPEKYTQRR");
-			System.out.println();
-			System.out.println("Looking for the mass " + parentMass + " that is from peptide " + "TQISLSTDEELPEKYTQRR");
-			sequences = proteoformDBIndex.getSequences(parentMass, 0.0001);
-			for (final IndexedSequence indexedSequence : sequences) {
-				System.out.println(indexedSequence.getSequence() + "\t"
-						+ IndexUtil.calculateMass(indexedSequence.getSequence()) + "\t"
-						+ indexedSequence.getModSequence() + "\t" + +indexedSequence.getMass() + "\t" + parentMass);
-				final List<Integer> proteinIds = indexedSequence.getProteinIds();
-				for (final Integer proteinId : proteinIds) {
-					final IndexedProtein indexedProtein = proteoformDBIndex.getIndexedProteinById(proteinId);
-					System.out.println("protein id: " + proteinId + "\t" + indexedProtein.getAccession() + "\t"
-							+ indexedProtein.getFastaDefLine());
-				}
-			}
-
-			parentMass = IndexUtil.calculateMass("TQISLSTDEELPEKYTQHR");
-			System.out.println();
-			System.out.println("Looking for the mass " + parentMass + " that is from peptide " + "TQISLSTDEELPEKYTQHR");
-			sequences = proteoformDBIndex.getSequences(parentMass, 0.0001);
-			for (final IndexedSequence indexedSequence : sequences) {
-				System.out.println(indexedSequence.getSequence() + "\t"
-						+ IndexUtil.calculateMass(indexedSequence.getSequence()) + "\t"
-						+ indexedSequence.getModSequence() + "\t" + +indexedSequence.getMass() + "\t" + parentMass);
-				final List<Integer> proteinIds = indexedSequence.getProteinIds();
-				for (final Integer proteinId : proteinIds) {
-					final IndexedProtein indexedProtein = proteoformDBIndex.getIndexedProteinById(proteinId);
-					System.out.println("protein id: " + proteinId + "\t" + indexedProtein.getAccession() + "\t"
-							+ indexedProtein.getFastaDefLine());
 				}
 			}
 
