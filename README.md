@@ -67,9 +67,20 @@ Firstly, you may know the steps this indexing is doing for every FASTA file:
  
  Once having the *proteoformDBIndex* we can ask for the proteins of a certain peptide:
  ```
- final Set<IndexedProtein> proteins = proteoformDBIndex.getProteins("ALYDFLPR");
+ final Set<IndexedProtein> proteins = proteoformDBIndex.getProteins("SPSPDDVLERVAADVKEYER");
  for (final IndexedProtein indexedProtein : proteins) {
-  System.out.println(indexedProtein.getAccession());
-  System.out.println(indexedProtein.getFastaDefLine());
+    System.out.println(indexedProtein.getAccession());
+    System.out.println(indexedProtein.getFastaDefLine());
  }
  ```
+And we can ask for the peptides with a certain parent mass:
+```
+double parentMass = IndexUtil.calculateMass("SPSPDDVLERVAADVKEYER");
+List<IndexedSequence> sequences = proteoformDBIndex.getSequences(parentMass, 0.0001);
+for (final IndexedSequence indexedSequence : sequences) {
+  System.out.println(indexedSequence.getSequence() + "\t"
+						+ IndexUtil.calculateMass(indexedSequence.getSequence()) + "\t"
+						+ indexedSequence.getModSequence() + "\t" + indexedSequence.getMass() + "\t" + parentMass);
+}
+
+```
