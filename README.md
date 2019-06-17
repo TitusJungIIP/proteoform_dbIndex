@@ -48,6 +48,10 @@ Firstly, you may know the steps this indexing is doing for every FASTA file:
  
  As we have mentioned, you have to use a parameters file. You can find one [here](https://raw.githubusercontent.com/proteomicsyates/proteoform_dbIndex/master/src/test/resources/blazmass_P42681.params)
  
- 
- 
+ Then, you can see this code snippet where an instance of ***ProteoformDBIndexInterface***: 
+ ```
+ File paramFile = new ClassPathResource("blazmass_Q13523.params").getFile();
+ int maxNumVariationsPerPeptide = 4;
+ ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile, true, false, null, null, uplr, uniprotVersion, maxNumVariationsPerPeptide, null);
+ ```
    
