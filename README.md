@@ -35,7 +35,7 @@ This module contains some test classes with some examples using test data. You c
 
 Firstly, you may know the steps this indexing is doing for every FASTA file:
  * **Reading input parameters**: The input parameters file is one of the parameters file used by BlazzMass search engine. However, many of the parameters included on it, are ignored, and so the only ones used in the indexing are (`with some example values`):
-   - *database_name*: Full path to FASTA file. `D:\\Salva\\git_projects\\proteoform_dbindex\\src\\test\\resources\\Q8WZ42.fasta`
+   - *database_name*: Full path to FASTA file. `D:\\Salva\\git_projects\\proteoform_dbindex\\src\\test\\resources\\Q13523.fasta`
    - *enzyme_residues*: Amino acids in which the enzyme should cut. `KR`.
    - *max_num_internal_cleavage_sites*: Number of allowed missed-cleavages. `3`.
    - *miscleavage*: This parameter name is a little bit confusing. It means 'semi-tryptic' or 'semi-cleavage'. If it is 'false', semi-cleavages are not allowed, and so in case of trypsin, it will allow only fully-tryptic peptides. In case of being 'true', semi-cleavages are allowed.
