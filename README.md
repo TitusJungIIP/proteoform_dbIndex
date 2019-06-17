@@ -80,9 +80,9 @@ Firstly, you may know the steps this indexing is doing for every FASTA file:
  Q13523
  >sp|Q13523|PRP4B_HUMAN Serine/threonine-protein kinase PRP4 homolog OS=Homo sapiens OX=9606 GN=PRPF4B PE=1 SV=3
  ```
-Protein *[Q13523](https://www.uniprot.org/uniprot/Q13523)* contains peptide *SPSPDDILERVAADVKEYER* at position 578
-
-As we can see in UniprotKB, protein [Q13523](https://www.uniprot.org/uniprot/Q13523) contains a polymorfisn at position (584)[https://www.uniprot.org/blast/?about=Q13523[584]&key=Natural%20variant&id=VAR_047798] ((VAR_047798)[https://web.expasy.org/variant_pages/VAR_047798.html], so we can ask for that modified peptide SPSPDD**V**LERVAADVKEYER containing a **'V'** instead of a **'I'** (I → V):
+Protein *[Q13523](https://www.uniprot.org/uniprot/Q13523)* contains peptide *SPSPDDILERVAADVKEYER* starting at position 578.  
+  
+As we can check in UniprotKB, protein [Q13523](https://www.uniprot.org/uniprot/Q13523) contains a polymorfism at position (584)[https://www.uniprot.org/blast/?about=Q13523[584]&key=Natural%20variant&id=VAR_047798] ((VAR_047798)[https://web.expasy.org/variant_pages/VAR_047798.html]), so we can ask for that modified peptide SPSPDD**V**LERVAADVKEYER containing a **'V'** instead of a **'I'** (**I → V**):
 ```
  System.out.println("Looking for the proteins from peptide with natural variance " + "SPSPDDVLERVAADVKEYER");
  final Set<IndexedProtein> proteins = proteoformDBIndex.getProteins("SPSPDDVLERVAADVKEYER");
