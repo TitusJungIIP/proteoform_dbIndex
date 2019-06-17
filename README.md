@@ -46,7 +46,7 @@ Firstly, you may know the steps this indexing is doing for every FASTA file:
  
  # How to use it:
  
- As we have mentioned, you have to use a parameters file. You can find one [here] (https://raw.githubusercontent.com/proteomicsyates/proteoform_dbIndex/master/src/test/resources/blazmass_P42681.params)
+ As we have mentioned, you have to use a parameters file. You can find one [here](https://raw.githubusercontent.com/proteomicsyates/proteoform_dbIndex/master/src/test/resources/blazmass_P42681.params)
  
  
  
