@@ -50,8 +50,18 @@ Firstly, you may know the steps this indexing is doing for every FASTA file:
  
  Then, you can see this code snippet where an instance of ***ProteoformDBIndexInterface***: 
  ```
+ // input parameters file
  File paramFile = new ClassPathResource("blazmass_Q13523.params").getFile();
+ // maximum number of variations (sequence variations and PTMs) per peptide
  int maxNumVariationsPerPeptide = 4;
- ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile, true, false, null, null, uplr, uniprotVersion, maxNumVariationsPerPeptide, null);
+ // Uniprot annotations retriever. It will retrieve the annotations to folder uniprotReleasesFolder
+ UniprotProteinLocalRetriever uplr = new UniprotProteinLocalRetriever(uniprotReleasesFolder, true);
+ // Create ProteoformDBIndexInterface instance
+ ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile, true, 
+    false, null, null, 
+    uplr, uniprotVersion, maxNumVariationsPerPeptide, null);
+    
+ // 
+ 
  ```
    
