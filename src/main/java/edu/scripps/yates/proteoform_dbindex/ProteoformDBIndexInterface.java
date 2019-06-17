@@ -18,6 +18,11 @@ import edu.scripps.yates.utilities.masses.AssignMass;
 public class ProteoformDBIndexInterface extends DBIndexImpl {
 	private final static Logger log = Logger.getLogger(ProteoformDBIndexInterface.class);
 
+	public ProteoformDBIndexInterface(File paramFile, UniprotProteinLocalRetriever uplr, String uniprotVersion,
+			int maxNumVariationsPerPeptide) {
+		this(paramFile, true, false, null, null, uplr, uniprotVersion, maxNumVariationsPerPeptide, null);
+	}
+
 	public ProteoformDBIndexInterface(File paramFile, boolean useUniprot, boolean usePhosphosite,
 			String phosphoSiteSpecies, File phosphoSiteDBFile, UniprotProteinLocalRetriever uplr, String uniprotVersion,
 			int maxNumVariationsPerPeptide, Set<String> peptideInclusionList) {

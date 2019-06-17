@@ -22,13 +22,9 @@ import edu.scripps.yates.utilities.fasta.dbindex.IndexedSequence;
 
 public class ProteoformDBIndexTest {
 
-	final char[] enzymeArray = { 'K', 'R' };
-	final int missedCleavages = 3;
-	final boolean semicleavage = false;
-
-	private File phosphoSiteDBFile;
-	private String phosphoSiteSpecies;
-	// uniprotReleasesFolder
+//	private File phosphoSiteDBFile;
+//	private String phosphoSiteSpecies;
+//	// uniprotReleasesFolder
 	// location where uniprot annotations will be stored and indexed
 	private final File uniprotReleasesFolder = new File(
 			"D:\\Salva\\git_projects\\proteoform_dbindex\\src\\test\\resources\\uniprotKB");
@@ -44,7 +40,7 @@ public class ProteoformDBIndexTest {
 	// if provided, peptideInclusionList is a list of peptides to index (the rest
 	// will be ignored). If not provided (null) all peptides under the parameters
 	// will be indexed
-	private final Set<String> peptideInclusionList = null;
+//	private final Set<String> peptideInclusionList = null;
 
 	@Before
 	public void loadResources() throws IOException {
@@ -54,10 +50,10 @@ public class ProteoformDBIndexTest {
 		// use this file.
 		// this file is downloaded from https://www.phosphosite.org/staticDownloads in
 		// the link named "Phosphosite_PTM_seq.fasta.gz"
-		phosphoSiteDBFile = new ClassPathResource("Phosphosite_PTM_seq.fasta").getFile();
+//		phosphoSiteDBFile = new ClassPathResource("Phosphosite_PTM_seq.fasta").getFile();
 
 		// phosphoSiteSpecies can be human, rat, cow, etc...
-		phosphoSiteSpecies = "human";
+//		phosphoSiteSpecies = "human";
 
 	}
 
@@ -68,11 +64,9 @@ public class ProteoformDBIndexTest {
 		// change the paths correspondingly
 		final File paramFile = new ClassPathResource("blazmass_uniprot_swissprot_human.params").getFile();
 		// create index
-		final boolean usePhosphoSite = false;
-		final ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile, true,
-				usePhosphoSite, phosphoSiteSpecies, phosphoSiteDBFile,
+		final ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile,
 				new UniprotProteinLocalRetriever(uniprotReleasesFolder, true), uniprotVersion,
-				maxNumVariationsPerPeptide, peptideInclusionList);
+				maxNumVariationsPerPeptide);
 		try {
 			System.out.println();
 			System.out.println("Looking for the proteins from peptide " + "ALYDFLPR");
@@ -154,11 +148,9 @@ public class ProteoformDBIndexTest {
 		// change the paths correspondingly
 		final File paramFile = new ClassPathResource("blazmass_Q13523.params").getFile();
 		// create index
-		final boolean usePhosphoSite = false;
 		final UniprotProteinLocalRetriever uplr = new UniprotProteinLocalRetriever(uniprotReleasesFolder, true);
-		final ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile, true,
-				usePhosphoSite, phosphoSiteSpecies, phosphoSiteDBFile, uplr, uniprotVersion, maxNumVariationsPerPeptide,
-				peptideInclusionList);
+		final ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile, uplr,
+				uniprotVersion, maxNumVariationsPerPeptide);
 
 		try {
 			System.out.println();
