@@ -37,7 +37,8 @@ Firstly, you may know the steps this indexing is doing for every FASTA file:
  * **Reading input parameters**: The input parameters file is one of the parameters file used by BlazzMass search engine. However, many of the parameters included on it, are ignored, and so the only ones used in the indexing are (`with some example values`):
    - *database_name*: Full path to FASTA file. `D:\\Salva\\git_projects\\proteoform_dbindex\\src\\test\\resources\\Q8WZ42.fasta`
    - *enzyme_residues*: Amino acids in which the enzyme should cut. `KR`.
-   - *miscleavage*: Number of allowed missed cleavages. `3`.
+   - *max_num_internal_cleavage_sites*: Number of allowed missed-cleavages. `3`.
+   - *miscleavage*: This parameter name is a little bit confusing. It means 'semi-tryptic' or 'semi-cleavage'. If it is 'false', semi-cleavages are not allowed, and so in case of trypsin, it will allow only fully-tryptic peptides. In case of being 'true', semi-cleavages are allowed.
    - *enzyme_nocut_residues*: amino acid that if present before the cleavage amino acid, will make the cleavage to not ocurr.
  * **Reading FASTA file**: It reads fasta file and extract UniprotKB accession numbers. Note that if the fasta file doesn't have accession numbers from UniprotKB, it will not be able to get the annotations of the sequence variants or PTMs.
  * **Getting UniprotKB annotations**: It retrieves the UniprotKB entries of the proteins in the FASTA file. It will store them in the folder you specify. By default, it will check for the latest release of the database. However, you can specify to use the same release even though a new version has been released.
