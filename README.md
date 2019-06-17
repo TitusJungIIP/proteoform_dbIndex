@@ -79,8 +79,8 @@ double parentMass = IndexUtil.calculateMass("SPSPDDVLERVAADVKEYER");
 List<IndexedSequence> sequences = proteoformDBIndex.getSequences(parentMass, 0.0001);
 for (final IndexedSequence indexedSequence : sequences) {
   System.out.println(indexedSequence.getSequence() + "\t"
-						+ IndexUtil.calculateMass(indexedSequence.getSequence()) + "\t"
-						+ indexedSequence.getModSequence() + "\t" + indexedSequence.getMass() + "\t" + parentMass);
+	+ IndexUtil.calculateMass(indexedSequence.getSequence()) + "\t"
+	+ indexedSequence.getModSequence() + "\t" + indexedSequence.getMass() + "\t" + parentMass);
 }
 
 ```
