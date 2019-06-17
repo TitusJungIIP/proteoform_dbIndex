@@ -44,5 +44,10 @@ Firstly, you may know the steps this indexing is doing for every FASTA file:
  * **Parsing protein sequences**: It reads the protein sequences and performs an in-silico digestion of the proteins, taking into account the parameters specified in the parameters file. While doing it, it gets the protein sequence variances and PTMs described in UniprotKB for each protein, and maps them to the sequence so that the generated peptides may contain these annotations.
  * **Peptide sequences are indexed**: Peptide sequences and their possible annotations are indexed into a SQLite database so that then, they can be retrieved quickly searching for a parent mass.
  
+ # How to use it:
+ 
+ As we have mentioned, you have to use a parameters file. You can find one [here] (https://raw.githubusercontent.com/proteomicsyates/proteoform_dbIndex/master/src/test/resources/blazmass_P42681.params)
+ 
+ 
  
    
