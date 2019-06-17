@@ -4,7 +4,7 @@ Given a certain FASTA file with Uniprot accessions, it automatically downloads t
 Therefore, this index code could be used by any algorithm or search engine that gets experimental parent masses and wants to get the peptide candidates in the proteome, taking into account that it could contain a PTM or a sequence variance that is not included in the stardard FASTA file.
 
 ## How to get it
-Using maven, add this to your prom.xml file:
+Using maven, add this to your *pom.xml* file:
  * Artifact (version may change over time, so we recommend you to look into the maven artifact URLs to get the latest version):
 ```
 <dependency>
@@ -46,8 +46,8 @@ Firstly, you may know the steps this indexing is doing for every FASTA file:
  
  # How to use it:
  
- As we have mentioned, you have to use a parameters file. You can find one [here](https://raw.githubusercontent.com/proteomicsyates/proteoform_dbIndex/master/src/test/resources/blazmass_P42681.params)
- 
+ As we have mentioned, you have to use a parameters file. You can find one [here](https://raw.githubusercontent.com/proteomicsyates/proteoform_dbIndex/master/src/test/resources/blazmass_P42681.params).  
+   
  Then, you can see this code snippet where an instance of ***ProteoformDBIndexInterface***: 
  ```
  // input parameters file
@@ -63,9 +63,10 @@ Firstly, you may know the steps this indexing is doing for every FASTA file:
  ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile, true, 
     false, null, null, 
     uplr, uniprotVersion, maxNumVariationsPerPeptide, null);
- ```
- 
- Once having the *proteoformDBIndex* we can ask for the proteins containing a certain peptide sequence:
+ ```  
+   
+ Once having the *proteoformDBIndex* we can ask for the proteins containing a certain peptide sequence:  
+   
  ```
  System.out.println("Looking for the proteins from peptide " + "SPSPDDILERVAADVKEYER");
  final Set<IndexedProtein> proteins = proteoformDBIndex.getProteins("SPSPDDILERVAADVKEYER");
@@ -105,7 +106,8 @@ Now, as we can check in UniprotKB, protein (Q13523)[https://www.uniprot.org/unip
  ```
 As you can see, we found that the peptide containing that variant is also found for that protein.    
   
-We can also use the index with masses instead of sequences. Therefore, we can ask for the mass of that peptide with the natural variance and get an *IndexedSequence* object:
+We can also use the index with masses instead of sequences. Therefore, we can ask for the mass of that peptide with the natural variance and get an *IndexedSequence* object:  
+  
 ```
 double parentMass = IndexUtil.calculateMass("SPSPDDVLERVAADVKEYER");
 System.out.println("Looking for the mass " + parentMass + " that is from peptide with natural variance " + "SPSPDDVLERVAADVKEYER");
