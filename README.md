@@ -31,7 +31,7 @@ Using maven, add this to your *pom.xml* file:
 
 # How it works:
 
-This module contains some test classes with some examples using test data. You can find it on the */src/test/java* folder, at the *ProteoformDBIndexTest.java* java file.  
+This module contains some test classes with some examples using test data. You can find it on the */src/test/java* folder, at the [*ProteoformDBIndexTest.java*](https://github.com/proteomicsyates/proteoform_dbIndex/blob/master/src/test/java/proteoform_dbindex/ProteoformDBIndexTest.java) java file.  
 
 Firstly, you may know the steps this indexing is doing for every FASTA file:
  * **Reading input parameters**: The input parameters file is one of the parameters file used by BlazzMass search engine. However, many of the parameters included on it, are ignored, and so the only ones used in the indexing are (`with some example values`):
@@ -47,7 +47,7 @@ Firstly, you may know the steps this indexing is doing for every FASTA file:
  
  # How to use it:
  
- As we have mentioned, you have to use a parameters file. You can find one [here](https://raw.githubusercontent.com/proteomicsyates/proteoform_dbIndex/master/src/test/resources/blazmass_P42681.params).  
+ As we have mentioned, you have to use a parameters file. You can find one [here](https://github.com/proteomicsyates/proteoform_dbIndex/blob/master/src/test/resources/blazmass_Q13523.params).  
    
  Then, you can see this code snippet where an instance of ***ProteoformDBIndexInterface***: 
  ```
