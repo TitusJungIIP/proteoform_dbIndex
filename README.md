@@ -29,7 +29,7 @@ Using maven, add this to your prom.xml file:
 </repositories>
 ```
 
-# How to use it
+# How it works:
 
 This module contains some test classes with some examples using test data. You can find it on the */src/test/java* folder, at the *ProteoformDBIndexTest.java* java file.  
 
