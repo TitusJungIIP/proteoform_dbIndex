@@ -82,7 +82,7 @@ Firstly, you may know the steps this indexing is doing for every FASTA file:
  ```
 Protein *[Q13523](https://www.uniprot.org/uniprot/Q13523)* contains peptide *SPSPDDILERVAADVKEYER* starting at position 578.  
   
-As we can check in UniprotKB, protein [Q13523](https://www.uniprot.org/uniprot/Q13523) contains a polymorfism at position (584)[https://www.uniprot.org/blast/?about=Q13523[584]&key=Natural%20variant&id=VAR_047798] ((VAR_047798)[https://web.expasy.org/variant_pages/VAR_047798.html]), so we can ask for that modified peptide SPSPDD**V**LERVAADVKEYER containing a **'V'** instead of a **'I'** (**I → V**):
+As we can check in UniprotKB, protein (Q13523)[https://www.uniprot.org/uniprot/Q13523] contains a polymorfism at position [584](https://www.uniprot.org/blast/?about=Q13523[584]&key=Natural%20variant&id=VAR_047798) ([VAR_047798](https://web.expasy.org/variant_pages/VAR_047798.html)), so we can ask for that modified peptide SPSPDD ***V*** LERVAADVKEYER containing a ***'V'*** instead of a ***'I'*** (***I → V***):
 ```
  System.out.println("Looking for the proteins from peptide with natural variance " + "SPSPDDVLERVAADVKEYER");
  final Set<IndexedProtein> proteins = proteoformDBIndex.getProteins("SPSPDDVLERVAADVKEYER");
@@ -117,7 +117,7 @@ Looking for the mass 2275.1242204659998 that is from peptide SPSPDDVLERVAADVKEYE
 SPSPDDVLERVAADVKEYER	2275.1242204659998	SPSPDD[I->V]LERVAADVKEYER	2275.1242204659993
 ```
 As you can see, the returned *IndexedSequence* contains the annotation of the sequence variation (**SPSPDD[I->V]LERVAADVKEYER**) when calling to *.getModSequence()* method.  
-Then, we know that the protein has been annotated as having a phosphorilation at positions (578)[https://www.uniprot.org/blast/?about=Q13523[578]&key=Modified%20residue] and (580)[https://www.uniprot.org/blast/?about=Q13523[580]&key=Modified%20residue] and so, we ask for the same parent mass, plus a phosphorilation (+79.966):
+Then, we know that the protein has been annotated as having a phosphorilation at positions [578](https://www.uniprot.org/blast/?about=Q13523[578]&key=Modified%20residue) and [580](https://www.uniprot.org/blast/?about=Q13523[580]&key=Modified%20residue) and so, we ask for the same parent mass, plus a phosphorilation (+79.966):
 ```
 final double phosphorilatedParentMass = parentMass + 79.966331;
 System.out.println("Looking for the mass " + phosphorilatedParentMass + " that is from peptide with natural variance "
@@ -143,7 +143,7 @@ Looking for the mass 2355.090551466 that is from peptide SPSPDDVLERVAADVKEYER pl
 SPSPDDVLERVAADVKEYER	2275.1242204659998	SPS[+79.9663]PDD[I->V]LERVAADVKEYER	2355.0905204659994	2355.090551466
 SPSPDDVLERVAADVKEYER	2275.1242204659998	S[+79.9663]PSPDD[I->V]LERVAADVKEYER	2355.0905204659994	2355.090551466
 ```
-As you can see, the index returns two different *IndexedSequence* objects that correspond to the protein [Q13523](https://www.uniprot.org/uniprot/Q13523) with a phosphorilation at position (578)[https://www.uniprot.org/blast/?about=Q13523[578]&key=Modified%20residue] and (580)[https://www.uniprot.org/blast/?about=Q13523[580]&key=Modified%20residue].  
+As you can see, the index returns two different *IndexedSequence* objects that correspond to the protein [Q13523](https://www.uniprot.org/uniprot/Q13523) with a phosphorilation at position [578](https://www.uniprot.org/blast/?about=Q13523[578]&key=Modified%20residue) and [580](https://www.uniprot.org/blast/?about=Q13523[580]&key=Modified%20residue).  
 Then, if we ask for the mass corresponding to the doubly phosphorilated mass:
 ```
 final double doublyPhosphorilatedParentMass = parentMass + 79.966331 + 79.966331;
