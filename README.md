@@ -57,6 +57,10 @@ Firstly, you may know the steps this indexing is doing for every FASTA file:
  // maximum number of variations (sequence variations and PTMs) per peptide
  int maxNumVariationsPerPeptide = 4;
  
+ // Uniprot repository version release
+ // null for latest version or "2019_05" for May 2019 version, for example
+ String uniprotVersion = "2019_05";
+	
  // Uniprot annotations retriever. It will retrieve the annotations to folder uniprotReleasesFolder
  UniprotProteinLocalRetriever uplr = new UniprotProteinLocalRetriever(uniprotReleasesFolder, true);
  
