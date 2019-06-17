@@ -73,6 +73,12 @@ Firstly, you may know the steps this indexing is doing for every FASTA file:
     System.out.println(indexedProtein.getFastaDefLine());
  }
  ```
+ Output:
+ ```
+ Looking for the proteins from peptide SPSPDDVLERVAADVKEYER
+ Q13523
+ >sp|Q13523|PRP4B_HUMAN Serine/threonine-protein kinase PRP4 homolog OS=Homo sapiens OX=9606 GN=PRPF4B PE=1 SV=3
+ ```
 And we can ask for the peptides with a certain parent mass:
 ```
 double parentMass = IndexUtil.calculateMass("SPSPDDVLERVAADVKEYER");
@@ -84,3 +90,32 @@ for (final IndexedSequence indexedSequence : sequences) {
 }
 
 ```
+Running this code will return the following output:
+```
+Looking for the mass 2275.1242204659998 that is from peptide SPSPDDVLERVAADVKEYER
+SPSPDDVLERVAADVKEYER	2275.1242204659998	SPSPDD[I->V]LERVAADVKEYER	2275.1242204659993	2275.1242204659998
+Looking for the mass 2355.090551466 that is from peptide SPSPDDVLERVAADVKEYER plus a phosphorilation
+SPSPDDVLERVAADVKEYER	2275.1242204659998	SPS[+79.9663]PDD[I->V]LERVAADVKEYER	2355.0905204659994	2355.090551466
+SPSPDDVLERVAADVKEYER	2275.1242204659998	S[+79.9663]PSPDD[I->V]LERVAADVKEYER	2355.0905204659994	2355.090551466
+```
+Then, we can ask for the same mass but adding the mass of a phosphorilation.
+```
+final double phosphorilatedParentMass = parentMass + 79.966331;
+System.out.println("Looking for the mass " + phosphorilatedParentMass + " that is from peptide "
+		+ "SPSPDDVLERVAADVKEYER" + " plus a phosphorilation");
+final List<IndexedSequence> phosphorilatedSequences = proteoformDBIndex.getSequences(phosphorilatedParentMass, 0.0001);
+for (final IndexedSequence indexedSequence : phosphorilatedSequences) {
+	if (indexedSequence instanceof IndexedSequenceWithPTMs) {
+		final IndexedSequenceWithPTMs indexedSequenceWithPTM = (IndexedSequenceWithPTMs) indexedSequence;
+		System.out.println(indexedSequenceWithPTM.getSequence() + "\t"
+			+ IndexUtil.calculateMass(indexedSequenceWithPTM.getSequence()) + "\t"
+			+ indexedSequenceWithPTM.getModSequence() + "\t" + indexedSequenceWithPTM.getMass() + "\t"
+			+ phosphorilatedParentMass);
+	} else {
+		System.out.println(indexedSequence.getSequence() + IndexUtil.calculateMass(indexedSequence.getSequence())
+			+ "\t" + indexedSequence.getModSequence() + "\t" + +indexedSequence.getMass()
+			+ "\t" + phosphorilatedParentMass);
+	}
+}
+```
+Because this protein 
