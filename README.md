@@ -61,9 +61,7 @@ Firstly, you may know the steps this indexing is doing for every FASTA file:
  UniprotProteinLocalRetriever uplr = new UniprotProteinLocalRetriever(uniprotReleasesFolder, true);
  
  // Create ProteoformDBIndexInterface instance
- ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile, true, 
-    false, null, null, 
-    uplr, uniprotVersion, maxNumVariationsPerPeptide, null);
+ ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile, uplr, uniprotVersion, maxNumVariationsPerPeptide);
  ```  
    
  Once having the *proteoformDBIndex* we can ask for the proteins containing a certain peptide sequence:  
