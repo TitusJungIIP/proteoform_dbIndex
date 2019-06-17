@@ -52,16 +52,24 @@ Firstly, you may know the steps this indexing is doing for every FASTA file:
  ```
  // input parameters file
  File paramFile = new ClassPathResource("blazmass_Q13523.params").getFile();
+ 
  // maximum number of variations (sequence variations and PTMs) per peptide
  int maxNumVariationsPerPeptide = 4;
+ 
  // Uniprot annotations retriever. It will retrieve the annotations to folder uniprotReleasesFolder
  UniprotProteinLocalRetriever uplr = new UniprotProteinLocalRetriever(uniprotReleasesFolder, true);
+ 
  // Create ProteoformDBIndexInterface instance
  ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile, true, 
     false, null, null, 
     uplr, uniprotVersion, maxNumVariationsPerPeptide, null);
-    
- // 
- 
  ```
-   
+ 
+ Once having the *proteoformDBIndex* we can ask for the proteins of a certain peptide:
+ ```
+ final Set<IndexedProtein> proteins = proteoformDBIndex.getProteins("ALYDFLPR");
+ for (final IndexedProtein indexedProtein : proteins) {
+  System.out.println(indexedProtein.getAccession());
+  System.out.println(indexedProtein.getFastaDefLine());
+ }
+ ```
