@@ -25,13 +25,13 @@ public class ByteArrayUtil {
 			byte[] slice = Arrays.copyOfRange(data, start, end);
 			final double mass = DynByteBuffer.toDouble(slice);
 
-			// offset (char, 2 bytes)
+			// offset (int, 4 bytes)
 			start = end;
-			end = start + 2;
+			end = start + 4;
 			slice = Arrays.copyOfRange(data, start, end);
-			final char offset = DynByteBuffer.toChar(slice);
+			final int offset = DynByteBuffer.toInt(slice);
 			if (offset < 0) {
-				System.out.println("ASDF");
+				throw new IllegalArgumentException("Offset overflown");
 			}
 			// length (short, 2 bytes)
 			start = end;
@@ -105,11 +105,11 @@ public class ByteArrayUtil {
 		byte[] slice = Arrays.copyOfRange(data, start, end);
 		final double mass = DynByteBuffer.toDouble(slice);
 
-		// offset (short, 2 bytes)
+		// offset (int, 4 bytes)
 		start = end;
-		end = start + 2;
+		end = start + 4;
 		slice = Arrays.copyOfRange(data, start, end);
-		final char offset = DynByteBuffer.toChar(slice);
+		final int offset = DynByteBuffer.toInt(slice);
 
 		// length (short, 2 bytes)
 		start = end;
@@ -148,7 +148,7 @@ public class ByteArrayUtil {
 
 	}
 
-	public static byte[] toByteArray(double precMass, char seqOffset, short seqLength, int proteinId, List<PTM> ptms) {
+	public static byte[] toByteArray(double precMass, int seqOffset, short seqLength, int proteinId, List<PTM> ptms) {
 		final DynByteBuffer byteBuffer = new DynByteBuffer();
 
 		final byte[] seqMassB = DynByteBuffer.toByteArray(precMass);

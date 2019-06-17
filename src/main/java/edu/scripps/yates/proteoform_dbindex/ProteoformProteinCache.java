@@ -42,7 +42,7 @@ public class ProteoformProteinCache extends ProteinCache {
 		this.proteinCacheFile = proteinCacheFile;
 	}
 
-	public String getPeptideSequence(int proteinId, char seqOffset, short seqLen, List<PTM> ptms)
+	public String getPeptideSequence(int proteinId, int seqOffset, short seqLen, List<PTM> ptms)
 			throws DBIndexStoreException {
 		String protSeq = null;
 		try {

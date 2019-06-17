@@ -268,16 +268,17 @@ public class ProteoformDBIndexStoreSQLiteByteIndexMerge extends DBIndexStoreSQLi
 		try {
 			totalSeqCount++;
 			final List<PTM> ptms = PTM.extractPTMsFromSequence(sequence, extendedAssignMass);
-			if (seqOffset > 32767 || seqOffset < 0) {
+			if (seqOffset < 0) {
 				logger.info("track this downt to bytes");
 			}
 			new DynByteBuffer();
-			final char seqOffsetChar = DynByteBuffer.toChar(DynByteBuffer.toByteArray(seqOffset));
-			final short int1 = DynByteBuffer.toShort(DynByteBuffer.toByteArray(seqOffsetChar));
-			if (int1 < 0) {
-				logger.info("Some error ocurred! 2 bytes of offset are overflown");
-			}
-			updateCachedData(precMass, seqOffsetChar, Integer.valueOf(seqLength).shortValue(),
+//			final byte[] byteArray = DynByteBuffer.toByteArray(seqOffset);
+//			final char seqOffsetChar = DynByteBuffer.toChar(byteArray);
+//			final int int1 = DynByteBuffer.toInt(DynByteBuffer.toByteArray(seqOffsetChar));
+//			if (int1 < 0 || int1 != seqOffset) {
+//				logger.info("Some error ocurred! 2 bytes of offset are overflown");
+//			}
+			updateCachedData(precMass, seqOffset, Integer.valueOf(seqLength).shortValue(),
 					Long.valueOf(proteinId).intValue(), ptms);
 
 			if (true) {
@@ -307,7 +308,7 @@ public class ProteoformDBIndexStoreSQLiteByteIndexMerge extends DBIndexStoreSQLi
 	 * @param seqLength
 	 * @param proteinId
 	 */
-	protected void updateCachedData(double precMass, char seqOffset, short seqLength, int proteinId, List<PTM> ptms) {
+	protected void updateCachedData(double precMass, int seqOffset, short seqLength, int proteinId, List<PTM> ptms) {
 		// changed by Salva 11Nov2014, using the value on IndexUtil
 		final int rowId = (int) (precMass * sparam.getMassGroupFactor());
 

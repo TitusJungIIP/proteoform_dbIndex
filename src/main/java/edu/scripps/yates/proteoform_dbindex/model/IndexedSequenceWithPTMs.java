@@ -18,7 +18,7 @@ public class IndexedSequenceWithPTMs extends IndexedSequence {
 
 	public int getBySize() {
 		final int numPtms = ptms != null ? ptms.size() : 0;
-		final int ret = 8 + 2 + 2 + (3 * numPtms) + 1 + (4 * getProteinIds().size()) + 4;
+		final int ret = 8 + 4 + 2 + (3 * numPtms) + 1 + (4 * getProteinIds().size()) + 4;
 		return ret;
 	}
 

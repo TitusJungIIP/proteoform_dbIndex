@@ -16,7 +16,7 @@ import edu.scripps.yates.utilities.bytes.DynByteBuffer;
  */
 public class IndexedSeqMergedWithPtms implements Comparable<IndexedSeqMergedWithPtms> {
 
-	public IndexedSeqMergedWithPtms(double mass, char offset, short length, List<Integer> proteinIds, List<PTM> ptms) {
+	public IndexedSeqMergedWithPtms(double mass, int offset, short length, List<Integer> proteinIds, List<PTM> ptms) {
 		setMass(mass);
 		setOffset(offset);
 		setLength(length);
@@ -25,7 +25,7 @@ public class IndexedSeqMergedWithPtms implements Comparable<IndexedSeqMergedWith
 	}
 
 	private double mass;
-	private char offset;
+	private int offset;
 	private short length;
 	private List<Integer> proteinIds;
 	private List<PTM> ptms;
@@ -65,11 +65,11 @@ public class IndexedSeqMergedWithPtms implements Comparable<IndexedSeqMergedWith
 		this.mass = mass;
 	}
 
-	public char getOffset() {
+	public int getOffset() {
 		return offset;
 	}
 
-	public void setOffset(char offset) {
+	public void setOffset(int offset) {
 		this.offset = offset;
 	}
 
