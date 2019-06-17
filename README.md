@@ -67,6 +67,24 @@ Firstly, you may know the steps this indexing is doing for every FASTA file:
  
  Once having the *proteoformDBIndex* we can ask for the proteins of a certain peptide:
  ```
+ System.out.println("Looking for the proteins from peptide " + "SPSPDDILERVAADVKEYER");
+ final Set<IndexedProtein> proteins = proteoformDBIndex.getProteins("SPSPDDILERVAADVKEYER");
+ for (final IndexedProtein indexedProtein : proteins) {
+    System.out.println(indexedProtein.getAccession());
+    System.out.println(indexedProtein.getFastaDefLine());
+ }
+ ```
+ Output:
+ ```
+ Looking for the proteins from peptide SPSPDDILERVAADVKEYER
+ Q13523
+ >sp|Q13523|PRP4B_HUMAN Serine/threonine-protein kinase PRP4 homolog OS=Homo sapiens OX=9606 GN=PRPF4B PE=1 SV=3
+ ```
+Protein *[Q13523](https://www.uniprot.org/uniprot/Q13523)* contains peptide *SPSPDDILERVAADVKEYER* at position 578
+
+As we can see in UniprotKB, protein [Q13523](https://www.uniprot.org/uniprot/Q13523) contains a single sequence variation at position , so we can ask for that modified peptide SPSPDD**V**LERVAADVKEYER:
+```
+ System.out.println("Looking for the proteins from peptide " + "SPSPDDVLERVAADVKEYER");
  final Set<IndexedProtein> proteins = proteoformDBIndex.getProteins("SPSPDDVLERVAADVKEYER");
  for (final IndexedProtein indexedProtein : proteins) {
     System.out.println(indexedProtein.getAccession());
@@ -79,26 +97,26 @@ Firstly, you may know the steps this indexing is doing for every FASTA file:
  Q13523
  >sp|Q13523|PRP4B_HUMAN Serine/threonine-protein kinase PRP4 homolog OS=Homo sapiens OX=9606 GN=PRPF4B PE=1 SV=3
  ```
-And we can ask for the peptides with a certain parent mass:
+As you can see, we found that the peptide containing that variant is also found for that protein.  
+
+We can also use the index with masses instead of sequences. Therefore, we can ask for the mass of that modified peptide:
 ```
 double parentMass = IndexUtil.calculateMass("SPSPDDVLERVAADVKEYER");
 List<IndexedSequence> sequences = proteoformDBIndex.getSequences(parentMass, 0.0001);
 for (final IndexedSequence indexedSequence : sequences) {
   System.out.println(indexedSequence.getSequence() + "\t"
 	+ IndexUtil.calculateMass(indexedSequence.getSequence()) + "\t"
-	+ indexedSequence.getModSequence() + "\t" + indexedSequence.getMass() + "\t" + parentMass);
+	+ indexedSequence.getModSequence() + "\t" + indexedSequence.getMass());
 }
 
 ```
-Running this code will return the following output:
+Output:
 ```
 Looking for the mass 2275.1242204659998 that is from peptide SPSPDDVLERVAADVKEYER
-SPSPDDVLERVAADVKEYER	2275.1242204659998	SPSPDD[I->V]LERVAADVKEYER	2275.1242204659993	2275.1242204659998
-Looking for the mass 2355.090551466 that is from peptide SPSPDDVLERVAADVKEYER plus a phosphorilation
-SPSPDDVLERVAADVKEYER	2275.1242204659998	SPS[+79.9663]PDD[I->V]LERVAADVKEYER	2355.0905204659994	2355.090551466
-SPSPDDVLERVAADVKEYER	2275.1242204659998	S[+79.9663]PSPDD[I->V]LERVAADVKEYER	2355.0905204659994	2355.090551466
+SPSPDDVLERVAADVKEYER	2275.1242204659998	SPSPDD[I->V]LERVAADVKEYER	2275.1242204659993
 ```
-Then, we can ask for the same mass but adding the mass of a phosphorilation.
+As you can see, the returned *IndexedSequence* contains the annotation of the sequence variation when calling to *.getModSequence()* method.  
+Then, we know that the same peptide can contain a phosphorilation and so, we ask for the same parent mass, plus a phosphorilation (+79.966):
 ```
 final double phosphorilatedParentMass = parentMass + 79.966331;
 System.out.println("Looking for the mass " + phosphorilatedParentMass + " that is from peptide "
@@ -118,4 +136,10 @@ for (final IndexedSequence indexedSequence : phosphorilatedSequences) {
 	}
 }
 ```
-Because this protein 
+This will output:
+```
+Looking for the mass 2355.090551466 that is from peptide SPSPDDVLERVAADVKEYER plus a phosphorilation
+SPSPDDVLERVAADVKEYER	2275.1242204659998	SPS[+79.9663]PDD[I->V]LERVAADVKEYER	2355.0905204659994	2355.090551466
+SPSPDDVLERVAADVKEYER	2275.1242204659998	S[+79.9663]PSPDD[I->V]LERVAADVKEYER	2355.0905204659994	2355.090551466
+```
+As you can see, the index returns two different *IndexedSequence* objects that correspond to the protein [Q13523](https://www.uniprot.org/uniprot/Q13523) with a phosphorilation at position (578)[https://www.uniprot.org/blast/?about=Q13523[578]&key=Modified%20residue] and (580)[https://www.uniprot.org/blast/?about=Q13523[580]&key=Modified%20residue].
