@@ -68,6 +68,8 @@ Firstly, you may know the steps this indexing is doing for every FASTA file:
  ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile, uplr, uniprotVersion, maxNumVariationsPerPeptide);
  ```  
    
+ ## Getting proteins mapped to a certain peptide sequence:  
+ 
  Once having the *proteoformDBIndex* we can ask for the proteins containing a certain peptide sequence:  
    
  ```
@@ -89,7 +91,9 @@ Firstly, you may know the steps this indexing is doing for every FASTA file:
    
 Protein *[Q13523](https://www.uniprot.org/uniprot/Q13523)* contains peptide *SPSPDDILERVAADVKEYER* starting at position 578.  
   
-Now, as we can check in UniprotKB, protein (Q13523)[https://www.uniprot.org/uniprot/Q13523] contains a **polymorfism at position [584](https://www.uniprot.org/blast/?about=Q13523[584]&key=Natural%20variant&id=VAR_047798) ([VAR_047798](https://web.expasy.org/variant_pages/VAR_047798.html))**, so we can ask for that modified peptide SPSPDD***V***LERVAADVKEYER containing a ***'V'*** instead of a ***'I'*** (***I → V***):
+## Getting proteins mapped to a certain peptide sequence containing a polymorphism:  
+
+Now, as we can check in UniprotKB, protein (Q13523)[https://www.uniprot.org/uniprot/Q13523] contains a **polymorphism at position [584](https://www.uniprot.org/blast/?about=Q13523[584]&key=Natural%20variant&id=VAR_047798) ([VAR_047798](https://web.expasy.org/variant_pages/VAR_047798.html))**, so we can ask for that modified peptide SPSPDD***V***LERVAADVKEYER containing a ***'V'*** instead of a ***'I'*** (***I → V***):
   
 ```
  System.out.println("Looking for the proteins from peptide with natural variance " + "SPSPDDVLERVAADVKEYER");
@@ -108,7 +112,9 @@ Now, as we can check in UniprotKB, protein (Q13523)[https://www.uniprot.org/unip
  >sp|Q13523|PRP4B_HUMAN Serine/threonine-protein kinase PRP4 homolog OS=Homo sapiens OX=9606 GN=PRPF4B PE=1 SV=3
  ```
 As you can see, we found that the peptide containing that variant is also found for that protein.    
-  
+
+## Getting peptides with polymorphism annotations:  
+
 We can also use the index with masses instead of sequences. Therefore, we can ask for the mass of that peptide with the natural variance and get an *IndexedSequence* object:  
   
 ```
@@ -130,7 +136,9 @@ SPSPDDVLERVAADVKEYER	2275.1242204659998	SPSPDD[I->V]LERVAADVKEYER	2275.124220465
 ```  
   
 As you can see, the returned *IndexedSequence* contains the annotation of the sequence variation (**SPSPDD\[I->V\]LERVAADVKEYER**) when calling to *.getModSequence()* method.  
-  
+
+## Getting peptides with polymorphism annotations and PTMs:  
+
 Then, we also know from UniprotKB that this protein has been annotated as having a phosphorilation at positions [578](https://www.uniprot.org/blast/?about=Q13523[578]&key=Modified%20residue) and [580](https://www.uniprot.org/blast/?about=Q13523[580]&key=Modified%20residue) and so, we can ask for the same parent mass plus a phosphorilation (+79.966):
   
 ```
