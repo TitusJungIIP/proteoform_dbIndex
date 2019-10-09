@@ -22,4 +22,8 @@ public class IndexedSequenceWithPTMs extends IndexedSequence {
 		return ret;
 	}
 
+	public Set<PTM> getPtms() {
+		return ptms;
+	}
+
 }
