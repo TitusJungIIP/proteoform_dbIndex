@@ -45,7 +45,9 @@ public class ProteoformDBIndexer extends DBIndexer {
 	public static final int MAX_PEPTIDE_LENGTH = 100;
 	////////////////////////////////////////////
 	private final boolean useUniprot;
+	private final String uniprotVersion;
 	private final boolean usePhosphosite;
+	private final String phosphoSiteSpecies;
 	private final PhosphositeDB phosphositeDB;
 	private final UniprotProteoformRetrieverFromXML proteoformRetriever;
 	private final int maxNumVariationsPerPeptide;
@@ -53,20 +55,24 @@ public class ProteoformDBIndexer extends DBIndexer {
 	private final ExtendedAssignMass extendedAssignMass;
 	private final UniprotProteinLocalRetriever uplr;
 	private final Set<String> peptideInclusionList;
+	private final String sufix;
 
-	public ProteoformDBIndexer(DBIndexSearchParams sparam, IndexerMode indexerMode, boolean useUniprot,
+	public ProteoformDBIndexer(DBIndexSearchParams sparam, IndexerMode indexerMode, String sufix, boolean useUniprot,
 			boolean usePhosphosite, String phosphoSiteSpecies, File phosphoSiteDBFastaFile,
 			UniprotProteinLocalRetriever uplr, String uniprotVersion, int maxNumVariationsPerPeptide,
 			Set<String> peptideInclusionList) throws IOException {
-		super(sparam, indexerMode,
-				new ProteoformDBIndexStoreSQLiteMult(sparam, false,
-						ExtendedAssignMass.getInstance(sparam.isUseMonoParent(),
-								new File(new File(sparam.getFullIndexFileName()).getAbsolutePath() + File.separator
-										+ PTMCodeObj.FILE_NAME))));
+		super(sparam, indexerMode, new ProteoformDBIndexStoreSQLiteMult(sparam, false,
+				ExtendedAssignMass.getInstance(sparam.isUseMonoParent(),
+						new File(new File(sparam.getFullIndexFileName(sufix, maxNumVariationsPerPeptide, useUniprot,
+								uniprotVersion, usePhosphosite, phosphoSiteSpecies)).getAbsolutePath() + File.separator
+								+ PTMCodeObj.FILE_NAME))));
 		this.peptideInclusionList = peptideInclusionList;
 		this.uplr = uplr;
 		this.usePhosphosite = usePhosphosite;
 		this.useUniprot = useUniprot;
+		this.uniprotVersion = uniprotVersion;
+		this.phosphoSiteSpecies = phosphoSiteSpecies;
+		this.sufix = sufix;
 		if (usePhosphosite) {
 			if (phosphoSiteSpecies != null && !"".equals(phosphoSiteSpecies)) {
 				if (phosphoSiteDBFastaFile != null) {
@@ -89,8 +95,10 @@ public class ProteoformDBIndexer extends DBIndexer {
 		proteoformRetriever.setRetrieveProteoforms(lookProteoforms);
 
 		this.maxNumVariationsPerPeptide = maxNumVariationsPerPeptide;
-		extendedAssignMass = ExtendedAssignMass.getInstance(sparam.isUseMonoParent(), new File(
-				new File(sparam.getFullIndexFileName()).getAbsolutePath() + File.separator + PTMCodeObj.FILE_NAME));
+		extendedAssignMass = ExtendedAssignMass.getInstance(sparam.isUseMonoParent(),
+				new File(new File(sparam.getFullIndexFileName(sufix, maxNumVariationsPerPeptide, useUniprot,
+						uniprotVersion, usePhosphosite, phosphoSiteSpecies)).getAbsolutePath() + File.separator
+						+ PTMCodeObj.FILE_NAME));
 	}
 
 	/**
@@ -367,7 +375,8 @@ public class ProteoformDBIndexer extends DBIndexer {
 	protected ProteinCache getProteinCache() {
 		if (proteinCache == null) {
 			proteinCache = new ProteoformProteinCache(extendedAssignMass,
-					new File(new File(sparam.getFullIndexFileName()).getAbsolutePath() + File.separator
+					new File(new File(sparam.getFullIndexFileName(sufix, maxNumVariationsPerPeptide, useUniprot,
+							uniprotVersion, usePhosphosite, phosphoSiteSpecies)).getAbsolutePath() + File.separator
 							+ ProteoformProteinCache.FILE_NAME));
 		}
 		return proteinCache;

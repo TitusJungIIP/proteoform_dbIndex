@@ -19,6 +19,10 @@ import edu.scripps.yates.utilities.masses.AssignMass;
 public class ProteoformDBIndexInterface extends DBIndexImpl {
 	private final static Logger log = Logger.getLogger(ProteoformDBIndexInterface.class);
 
+	public ProteoformDBIndexInterface(DBIndexSearchParams sParam, int maxNumVariationsPerPeptide) {
+		this(sParam, maxNumVariationsPerPeptide, null);
+	}
+
 	/**
 	 * 
 	 * @param sParam                     the parameters object. You can create it
@@ -27,7 +31,7 @@ public class ProteoformDBIndexInterface extends DBIndexImpl {
 	 * 
 	 * @param maxNumVariationsPerPeptide
 	 */
-	public ProteoformDBIndexInterface(DBIndexSearchParams sParam, int maxNumVariationsPerPeptide) {
+	public ProteoformDBIndexInterface(DBIndexSearchParams sParam, int maxNumVariationsPerPeptide, String sufix) {
 		super();
 
 		try {
@@ -49,14 +53,15 @@ public class ProteoformDBIndexInterface extends DBIndexImpl {
 						"lookForProteoforms is FALSE. Set it to TRUE when creating DBIndexSearchParams object");
 			}
 
-			indexer = createIndexer(sParam, indexerMode, useUniprot, usePhosphosite, phosphoSiteSpecies,
+			indexer = createIndexer(sParam, indexerMode, sufix, useUniprot, usePhosphosite, phosphoSiteSpecies,
 					phosphoSiteDBFile, uplr, uniprotVersion, maxNumVariationsPerPeptide, peptideInclusionList);
 			try {
 				indexer.init();
 
 			} catch (final DBIndexerException ex) {
-				indexer = createIndexer(sParam, IndexerMode.INDEX, useUniprot, usePhosphosite, phosphoSiteSpecies,
-						phosphoSiteDBFile, uplr, uniprotVersion, maxNumVariationsPerPeptide, peptideInclusionList);
+				indexer = createIndexer(sParam, IndexerMode.INDEX, sufix, useUniprot, usePhosphosite,
+						phosphoSiteSpecies, phosphoSiteDBFile, uplr, uniprotVersion, maxNumVariationsPerPeptide,
+						peptideInclusionList);
 				try {
 					indexer.init();
 					indexer.run();
@@ -76,12 +81,12 @@ public class ProteoformDBIndexInterface extends DBIndexImpl {
 		}
 	}
 
-	public ProteoformDBIndexInterface(File paramFile, UniprotProteinLocalRetriever uplr, String uniprotVersion,
-			int maxNumVariationsPerPeptide) {
-		this(paramFile, true, false, null, null, uplr, uniprotVersion, maxNumVariationsPerPeptide, null);
+	public ProteoformDBIndexInterface(File paramFile, String sufix, UniprotProteinLocalRetriever uplr,
+			String uniprotVersion, int maxNumVariationsPerPeptide) {
+		this(paramFile, sufix, true, false, null, null, uplr, uniprotVersion, maxNumVariationsPerPeptide, null);
 	}
 
-	public ProteoformDBIndexInterface(File paramFile, boolean useUniprot, boolean usePhosphosite,
+	public ProteoformDBIndexInterface(File paramFile, String sufix, boolean useUniprot, boolean usePhosphosite,
 			String phosphoSiteSpecies, File phosphoSiteDBFile, UniprotProteinLocalRetriever uplr, String uniprotVersion,
 			int maxNumVariationsPerPeptide, Set<String> peptideInclusionList) {
 		super();
@@ -105,14 +110,15 @@ public class ProteoformDBIndexInterface extends DBIndexImpl {
 				sParam.setUniprotReleasesFolder(uplr.getUniprotReleasesFolder());
 			}
 			sParam.setLookProteoforms(true);
-			indexer = createIndexer(sParam, indexerMode, useUniprot, usePhosphosite, phosphoSiteSpecies,
+			indexer = createIndexer(sParam, indexerMode, sufix, useUniprot, usePhosphosite, phosphoSiteSpecies,
 					phosphoSiteDBFile, uplr, uniprotVersion, maxNumVariationsPerPeptide, peptideInclusionList);
 			try {
 				indexer.init();
 
 			} catch (final DBIndexerException ex) {
-				indexer = createIndexer(sParam, IndexerMode.INDEX, useUniprot, usePhosphosite, phosphoSiteSpecies,
-						phosphoSiteDBFile, uplr, uniprotVersion, maxNumVariationsPerPeptide, peptideInclusionList);
+				indexer = createIndexer(sParam, IndexerMode.INDEX, sufix, useUniprot, usePhosphosite,
+						phosphoSiteSpecies, phosphoSiteDBFile, uplr, uniprotVersion, maxNumVariationsPerPeptide,
+						peptideInclusionList);
 				try {
 					indexer.init();
 					indexer.run();
@@ -133,17 +139,18 @@ public class ProteoformDBIndexInterface extends DBIndexImpl {
 		}
 	}
 
-	private DBIndexer createIndexer(DBIndexSearchParams sParam, IndexerMode indexerMode, boolean useUniprot,
-			boolean usePhosphosite, String phosphoSiteSpecies, File phosphoSiteDBFile,
+	private DBIndexer createIndexer(DBIndexSearchParams sParam, IndexerMode indexerMode, String sufix,
+			boolean useUniprot, boolean usePhosphosite, String phosphoSiteSpecies, File phosphoSiteDBFile,
 			UniprotProteinLocalRetriever uplr, String uniprotVersion, int maxNumVariationsPerPeptide,
 			Set<String> peptideInclusionList) throws IOException {
-		return new ProteoformDBIndexer(sParam, indexerMode, useUniprot, usePhosphosite, phosphoSiteSpecies,
+		return new ProteoformDBIndexer(sParam, indexerMode, sufix, useUniprot, usePhosphosite, phosphoSiteSpecies,
 				phosphoSiteDBFile, uplr, uniprotVersion, maxNumVariationsPerPeptide, peptideInclusionList);
 	}
 
-	public ProteoformDBIndexInterface(DBIndexSearchParams sParam, boolean useUniprot, boolean usePhosphosite,
-			String phosphoSiteSpecies, File phosphoSiteDBFile, UniprotProteinLocalRetriever uplr, String uniprotVersion,
-			int maxNumVariationsPerPeptide, Set<String> peptideInclusionList) {
+	public ProteoformDBIndexInterface(DBIndexSearchParams sParam, String sufix, boolean useUniprot,
+			boolean usePhosphosite, String phosphoSiteSpecies, File phosphoSiteDBFile,
+			UniprotProteinLocalRetriever uplr, String uniprotVersion, int maxNumVariationsPerPeptide,
+			Set<String> peptideInclusionList) {
 		super();
 		try {
 
@@ -152,13 +159,14 @@ public class ProteoformDBIndexInterface extends DBIndexImpl {
 			final edu.scripps.yates.dbindex.DBIndexer.IndexerMode indexerMode = sParam.isUseIndex()
 					? IndexerMode.SEARCH_INDEXED
 					: IndexerMode.SEARCH_UNINDEXED;
-			indexer = new ProteoformDBIndexer(sParam, indexerMode, useUniprot, usePhosphosite, phosphoSiteSpecies,
-					phosphoSiteDBFile, uplr, uniprotVersion, maxNumVariationsPerPeptide, peptideInclusionList);
+			indexer = new ProteoformDBIndexer(sParam, indexerMode, sufix, useUniprot, usePhosphosite,
+					phosphoSiteSpecies, phosphoSiteDBFile, uplr, uniprotVersion, maxNumVariationsPerPeptide,
+					peptideInclusionList);
 			try {
 				indexer.init();
 
 			} catch (final DBIndexerException ex) {
-				indexer = new ProteoformDBIndexer(sParam, IndexerMode.INDEX, useUniprot, usePhosphosite,
+				indexer = new ProteoformDBIndexer(sParam, IndexerMode.INDEX, sufix, useUniprot, usePhosphosite,
 						phosphoSiteSpecies, phosphoSiteDBFile, uplr, uniprotVersion, maxNumVariationsPerPeptide,
 						peptideInclusionList);
 				try {
@@ -169,7 +177,9 @@ public class ProteoformDBIndexInterface extends DBIndexImpl {
 					log.error("Could not initialize the indexer in search mode and init the worker thread");
 				}
 			}
-			dbIndexByParamKey.put(sParam.getFullIndexFileName(), this);
+
+			dbIndexByParamKey.put(sParam.getFullIndexFileName(sufix, maxNumVariationsPerPeptide, useUniprot,
+					uniprotVersion, usePhosphosite, phosphoSiteSpecies), this);
 		} catch (final IOException e) {
 			e.printStackTrace();
 			log.error(e.getMessage());

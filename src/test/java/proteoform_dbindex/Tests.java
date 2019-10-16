@@ -88,9 +88,9 @@ public class Tests {
 		// if looking for proteoforms, not use in memory
 		final boolean inMemoryIndex = false;
 		((DBIndexSearchParamsImpl) defaultDBIndexParams).setInMemoryIndex(inMemoryIndex);
-
-		final ProteoformDBIndexInterface dbIndex = new ProteoformDBIndexInterface(defaultDBIndexParams, useUniprot,
-				usePhosphoSite, "human", null,
+		final String sufix = null;
+		final ProteoformDBIndexInterface dbIndex = new ProteoformDBIndexInterface(defaultDBIndexParams, sufix,
+				useUniprot, usePhosphoSite, "human", null,
 				new UniprotProteinLocalRetriever(uniprotReleasesFolder, true, true, true), null,
 				numVariationsPerPeptide, null);
 		final String peptideSeq = "MEEPQSDPSVEPPLSQETFSDLWK";

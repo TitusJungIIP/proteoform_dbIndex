@@ -64,7 +64,8 @@ public class ProteoformDBIndexTest {
 		// change the paths correspondingly
 		final File paramFile = new ClassPathResource("blazmass_uniprot_swissprot_human.params").getFile();
 		// create index
-		final ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile,
+		final String sufix = null;
+		final ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile, sufix,
 				new UniprotProteinLocalRetriever(uniprotReleasesFolder, true), uniprotVersion,
 				maxNumVariationsPerPeptide);
 		try {
@@ -148,8 +149,9 @@ public class ProteoformDBIndexTest {
 		// change the paths correspondingly
 		final File paramFile = new ClassPathResource("blazmass_Q13523.params").getFile();
 		// create index
+		final String sufix = null;
 		final UniprotProteinLocalRetriever uplr = new UniprotProteinLocalRetriever(uniprotReleasesFolder, true);
-		final ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile, uplr,
+		final ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile, sufix, uplr,
 				uniprotVersion, maxNumVariationsPerPeptide);
 
 		try {
