@@ -19,6 +19,7 @@ import edu.scripps.yates.dbindex.Constants;
 import edu.scripps.yates.dbindex.DBIndexStore.FilterResult;
 import edu.scripps.yates.dbindex.DBIndexer;
 import edu.scripps.yates.dbindex.ProteinCache;
+import edu.scripps.yates.dbindex.util.IndexUtil;
 import edu.scripps.yates.proteoform_dbindex.model.ExtendedAssignMass;
 import edu.scripps.yates.proteoform_dbindex.model.PTMCodeObj;
 import edu.scripps.yates.proteoform_dbindex.model.PhosphositeDB;
@@ -385,6 +386,12 @@ public class ProteoformDBIndexer extends DBIndexer {
 	@Override
 	protected UniprotProteinLocalRetriever getUniprotProteinLocalRetriever() {
 		return uplr;
+	}
+
+	@Override
+	protected String createFullIndexFileName() {
+		return IndexUtil.createFullIndexFileName(sparam, sufix, maxNumVariationsPerPeptide, useUniprot, uniprotVersion,
+				usePhosphosite, phosphoSiteSpecies);
 	}
 
 }
