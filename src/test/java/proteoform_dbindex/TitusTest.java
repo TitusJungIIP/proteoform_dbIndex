@@ -2,21 +2,16 @@ package proteoform_dbindex;
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.junit.Test;
 
 import edu.scripps.yates.annotations.uniprot.UniprotProteinLocalRetriever;
-import edu.scripps.yates.annotations.uniprot.UniprotProteinRemoteRetriever;
 import edu.scripps.yates.dbindex.DBIndexImpl;
 import edu.scripps.yates.proteoform_dbindex.ProteoformDBIndexInterface;
-import edu.scripps.yates.utilities.annotations.uniprot.UniprotEntryUtil;
-import edu.scripps.yates.utilities.annotations.uniprot.xml.Entry;
+import edu.scripps.yates.proteoform_dbindex.model.ExtendedAssignMass;
 import edu.scripps.yates.utilities.fasta.dbindex.DBIndexSearchParams;
 import edu.scripps.yates.utilities.fasta.dbindex.DBIndexStoreException;
 import edu.scripps.yates.utilities.fasta.dbindex.IndexedSequence;
-import gnu.trove.set.hash.THashSet;
 
 public class TitusTest {
 	private static final File uniprotReleasesFolder = new File("Z:\\share\\Salva\\data\\uniprotKB");
@@ -24,7 +19,7 @@ public class TitusTest {
 	@Test
 	public void testTitus() throws DBIndexStoreException {
 		// input parameters file
-		final File paramFile = new File("C:\\Users\\salvador\\Desktop\\tmp\\titus\\blazmass_Q13523.params");
+		final File paramFile = new File("d:\\titus\\blazmass_Q13523.params");
 
 //maximum number of variations (sequence variations and PTMs) per peptide
 		final int maxNumVariationsPerPeptide = 4;
@@ -32,7 +27,7 @@ public class TitusTest {
 //Uniprot repository version release
 //null for latest version or "2019_05" for May 2019 version, for example
 		final String uniprotVersion = null;
-		final File uniprotReleasesFolder = new File("C:\\Users\\salvador\\Desktop\\tmp\\titus");
+
 //Uniprot annotations retriever. It will retrieve the annotations to folder uniprotReleasesFolder
 		final UniprotProteinLocalRetriever uplr = new UniprotProteinLocalRetriever(uniprotReleasesFolder, true);
 		// System.out.println("TESTTTING ");
@@ -58,7 +53,7 @@ public class TitusTest {
 
 //Uniprot repository version release
 //null for latest version or "2019_05" for May 2019 version, for example
-		final String uniprotVersion = null;
+		final String uniprotVersion = "2019_08";
 //Uniprot annotations retriever. It will retrieve the annotations to folder uniprotReleasesFolder
 		final UniprotProteinLocalRetriever uplr = new UniprotProteinLocalRetriever(uniprotReleasesFolder, true);
 		// System.out.println("TESTTTING ");
@@ -76,15 +71,13 @@ public class TitusTest {
 
 	@Test
 	public void testTitus3() throws DBIndexStoreException {
-		// input parameters file
-		final File paramFile = new File("d:\\titus\\blazmass_UniProt_Human_sprot_11-08-2010_reversed.params");
 
 //maximum number of variations (sequence variations and PTMs) per peptide
-		final int maxNumVariationsPerPeptide = 0;
+		final int maxNumVariationsPerPeptide = 2;
 
 //Uniprot repository version release
 //null for latest version or "2019_05" for May 2019 version, for example
-		final String uniprotVersion = null;
+		final String uniprotVersion = "2019_08";
 //Uniprot annotations retriever. It will retrieve the annotations to folder uniprotReleasesFolder
 		final UniprotProteinLocalRetriever uplr = new UniprotProteinLocalRetriever(uniprotReleasesFolder, true);
 		final String fastaFilePath = "D:\\titus\\UniProt_Human_sprot_11-08-2010_reversed.fasta";
@@ -114,35 +107,27 @@ public class TitusTest {
 	}
 
 	@Test
-	public void test4() {
-		final Set<String> accessions = new THashSet<String>();
-		accessions.add("Q00005-2");
-		accessions.add("Q00005-3");
-		final Map<String, Entry> entries = UniprotProteinRemoteRetriever.getFASTASequencesInParallel(accessions);
-		System.out.println(entries.size() + " entries");
-		for (final String acc : accessions) {
-			System.out.println(entries.containsKey(acc) + " " + acc);
-			final Entry entry = entries.get(acc);
-			System.out.println("\n\n==============================\n" + acc);
-			System.out.println(UniprotEntryUtil.getPrimaryAccession(entry));
-			System.out.println(UniprotEntryUtil.getProteinSequence(entry));
-		}
-	}
+	public void test6() {
 
-	@Test
-	public void test5() {
-		final Set<String> accessions = new THashSet<String>();
-		accessions.add("Q00005-2");
-		accessions.add("Q00005-3");
-		final Map<String, Entry> entries = new UniprotProteinRemoteRetriever()
-				.getIsoformFASTASequencesFromUniprot(accessions, uniprotReleasesFolder, null);
-		System.out.println(entries.size() + " entries");
-		for (final String acc : accessions) {
-			System.out.println(entries.containsKey(acc) + " " + acc);
-			final Entry entry = entries.get(acc);
-			System.out.println("\n\n==============================\n" + acc);
-			System.out.println(UniprotEntryUtil.getPrimaryAccession(entry));
-			System.out.println(UniprotEntryUtil.getProteinSequence(entry));
-		}
+		final String directory = "d:\\titus";
+
+		final int maxMisclevages = 3;
+		final double minPrcMass = 600;
+		final double maxPrcMass = 6000;
+		final String residues = "KR";
+		final int maxNumVariationsPerPeptide = 0;
+		final int offset = 1;
+
+		final String fastaFilePath = "D:\\titus\\UniProt_Human_sprot_11-08-2010_reversed.fasta";
+		final String discarDecoys = null;
+		final String uniprotVersion = "2019_08";
+		final DBIndexSearchParams params = DBIndexImpl.getDefaultDBIndexParamsForProteoformAnalysis(fastaFilePath,
+				maxMisclevages, minPrcMass, maxPrcMass, residues, null, offset, false, uniprotVersion, discarDecoys,
+				uniprotReleasesFolder.getAbsolutePath());
+
+		final ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(params,
+				maxNumVariationsPerPeptide);
+		final Object extendedAssignMass = ExtendedAssignMass.getInstance(false, null);
+
 	}
 }
