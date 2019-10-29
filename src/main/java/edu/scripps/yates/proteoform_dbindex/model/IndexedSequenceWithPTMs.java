@@ -1,12 +1,12 @@
 package edu.scripps.yates.proteoform_dbindex.model;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import edu.scripps.yates.utilities.fasta.dbindex.IndexedSequence;
 
 public class IndexedSequenceWithPTMs extends IndexedSequence {
-	private final Set<PTM> ptms = new HashSet<PTM>();
+	private final List<PTM> ptms = new ArrayList<PTM>();
 
 	public IndexedSequenceWithPTMs(long id, double mass, String sequence, String resLeft, String resRight) {
 		super(id, mass, sequence, resLeft, resRight);
@@ -22,7 +22,7 @@ public class IndexedSequenceWithPTMs extends IndexedSequence {
 		return ret;
 	}
 
-	public Set<PTM> getPtms() {
+	public List<PTM> getPtms() {
 		return ptms;
 	}
 
