@@ -86,7 +86,10 @@ public class SequenceWithModification {
 
 	@Override
 	public int hashCode() {
-		return getSequenceWithModification().hashCode() + getSequenceAfterModification().hashCode();
+		int hash = 7;
+		hash = 31 * hash + getSequenceWithModification().hashCode();
+		hash = 31 * hash + getSequenceAfterModification().hashCode();
+		return hash;
 	}
 
 	@Override
