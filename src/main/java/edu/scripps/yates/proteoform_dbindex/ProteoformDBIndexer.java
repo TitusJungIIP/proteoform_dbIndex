@@ -216,9 +216,9 @@ public class ProteoformDBIndexer extends DBIndexer {
 						logger.debug("Skipping peptide '" + peptideSequence + "' by filter");
 						break;
 					}
-					if (peptideSequence.equals("VLATVTKPVGGDK")) {
-						logger.info(peptideSequence);
-					}
+//					if (peptideSequence.equals("SPSPDDILERVAADVKEYER")) {
+//						logger.info(peptideSequence);
+//					}
 					final List<SequenceChange> sequenceChanges = ProteoformDBIndexUtil.getInstance()
 							.getSequenceChangesInPeptide(peptideSequence, proteinSequence.indexOf(peptideSequence) + 1,
 									nonIsoformsProteoformsByPositionInMainProtein, isoform);
@@ -229,6 +229,9 @@ public class ProteoformDBIndexer extends DBIndexer {
 
 					for (final SequenceWithModification modifiedPeptide : modifiedPeptides) {
 						final String sequenceAfterModification = modifiedPeptide.getSequenceAfterModification();
+//						if (sequenceAfterModification.equals("SPSPDDVLERVAADVKEYER")) {
+//							logger.info("asdf");
+//						}
 						if (sequenceAfterModification.length() < Constants.MIN_PEP_LENGTH) { // Constants.MIN_PRECURSOR
 							continue;
 						}
@@ -311,17 +314,17 @@ public class ProteoformDBIndexer extends DBIndexer {
 							} else {
 								peptideKeys.add(key);
 							}
-							if (modifiedPeptide.getSequenceWithModification().startsWith("TQISLSTDEELPEKYTQRR")) {
-								logger.info("asdf");
-							}
-							if (Double.compare(precMass, 665.3505890660001) == 0
-									&& modifiedPeptide.getSequenceBeforeModification().length() == 7
-									&& proteinId == 7753) {
-								logger.info("asdf");
-							}
-							if (proteinId == 7753) {
-								logger.info("asdf");
-							}
+//							if (modifiedPeptide.getSequenceWithModification().startsWith("TQISLSTDEELPEKYTQRR")) {
+//								logger.info("asdf");
+//							}
+//							if (Double.compare(precMass, 665.3505890660001) == 0
+//									&& modifiedPeptide.getSequenceBeforeModification().length() == 7
+//									&& proteinId == 7753) {
+//								logger.info("asdf");
+//							}
+//							if (proteinId == 7753) {
+//								logger.info("asdf");
+//							}
 							indexStore.addSequence(precMass,
 									proteinSequence.indexOf(modifiedPeptide.getSequenceBeforeModification()),
 									modifiedPeptide.getSequenceBeforeModification().length(),
