@@ -16,7 +16,7 @@ public class PTMTest {
 				"D:\\titus\\UniProt_Human_sprot_11-08-2010_reversed.fasta_d0419382f1d8fa4cd8d1703f64597c4\\ptmCodes.txt");
 		final ExtendedAssignMass extendedAssignMass = ExtendedAssignMass.getInstance(true, ptmCodeFiles);
 		String modifiedSequence = "ABC[D->]EF[+30]";
-		List<PTM> ptms = PTM.extractPTMsFromSequence(modifiedSequence, extendedAssignMass);
+		List<PTM> ptms = PTM.extractPTMsFromSequenceBasedOnResultingSequence(modifiedSequence, extendedAssignMass);
 		Assert.assertEquals(2, ptms.size());
 		PTM ptm1 = ptms.get(0);
 		Assert.assertEquals(3, ptm1.getPosInPeptide());
@@ -25,7 +25,7 @@ public class PTMTest {
 
 		//
 		modifiedSequence = "ABC[D->KK]EF[+30]";
-		ptms = PTM.extractPTMsFromSequence(modifiedSequence, extendedAssignMass);
+		ptms = PTM.extractPTMsFromSequenceBasedOnResultingSequence(modifiedSequence, extendedAssignMass);
 		Assert.assertEquals(2, ptms.size());
 		ptm1 = ptms.get(0);
 		Assert.assertEquals(3, ptm1.getPosInPeptide());
@@ -34,7 +34,7 @@ public class PTMTest {
 
 		//
 		modifiedSequence = "ABC[D->KK]EF[+30][R->][TT->EEE]";
-		ptms = PTM.extractPTMsFromSequence(modifiedSequence, extendedAssignMass);
+		ptms = PTM.extractPTMsFromSequenceBasedOnResultingSequence(modifiedSequence, extendedAssignMass);
 		Assert.assertEquals(4, ptms.size());
 		ptm1 = ptms.get(0);
 		Assert.assertEquals(3, ptm1.getPosInPeptide());

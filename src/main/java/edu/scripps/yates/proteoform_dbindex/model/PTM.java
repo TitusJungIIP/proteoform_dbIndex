@@ -31,8 +31,8 @@ public class PTM {
 		return posInPeptide;
 	}
 
-	public static List<PTM> extractPTMsFromSequence(String modifiedSequence, ExtendedAssignMass extendedAssignMass)
-			throws IOException {
+	public static List<PTM> extractPTMsFromSequenceBasedOnResultingSequence(String modifiedSequence,
+			ExtendedAssignMass extendedAssignMass) throws IOException {
 		final List<PTM> ptms = new ArrayList<PTM>();
 		int position = 0;
 		boolean newChangeStarts = false;
@@ -87,8 +87,8 @@ public class PTM {
 		return ptms;
 	}
 
-	public static List<PTM> extractPTMsFromSequenceOLD(String modifiedSequence, ExtendedAssignMass extendedAssignMass)
-			throws IOException {
+	public static List<PTM> extractPTMsFromSequenceBasedOnOriginalSequence(String modifiedSequence,
+			ExtendedAssignMass extendedAssignMass) throws IOException {
 		final List<PTM> ptms = new ArrayList<PTM>();
 		int position = 0;
 		StringBuilder change = null;

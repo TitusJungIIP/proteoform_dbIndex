@@ -53,7 +53,7 @@ public class ProteoformDBIndexStoreSQLiteByte extends DBIndexStoreSQLiteByte {
 
 		totalSeqCount++;
 		try {
-			final List<PTM> ptms = PTM.extractPTMsFromSequence(sequence, extendedAssignMass);
+			final List<PTM> ptms = PTM.extractPTMsFromSequenceBasedOnResultingSequence(sequence, extendedAssignMass);
 			final char seqOffsetChar = DynByteBuffer.toChar(DynByteBuffer.toByteArray(seqOffset));
 
 			updateCachedData(precMass, seqOffsetChar, (short) seqLength, (int) proteinId, ptms);

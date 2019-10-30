@@ -267,7 +267,7 @@ public class ProteoformDBIndexStoreSQLiteByteIndexMerge extends DBIndexStoreSQLi
 		}
 		try {
 			totalSeqCount++;
-			final List<PTM> ptms = PTM.extractPTMsFromSequence(sequence, extendedAssignMass);
+			final List<PTM> ptms = PTM.extractPTMsFromSequenceBasedOnResultingSequence(sequence, extendedAssignMass);
 			if (seqOffset < 0) {
 				logger.info("track this downt to bytes");
 			}

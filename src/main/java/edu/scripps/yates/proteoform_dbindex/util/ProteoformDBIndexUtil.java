@@ -600,7 +600,7 @@ public class ProteoformDBIndexUtil {
 	 * @param newPeptideSequence
 	 * @return
 	 */
-	protected static String getOriginalPeptideSequence(String sequenceWithModification, String newPeptideSequence) {
+	public static String getOriginalPeptideSequence(String sequenceWithModification, String newPeptideSequence) {
 		final StringBuilder sb = new StringBuilder();
 		// common beginning would be ABDC in the example
 
