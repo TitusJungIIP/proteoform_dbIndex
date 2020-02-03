@@ -2,10 +2,10 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.scripps.yates</groupId>
   <artifactId>proteoform_dbindex</artifactId>
-  <version>0.0.2-SNAPSHOT</version>
+  <version>0.0.3-SNAPSHOT</version>
   <build>
       <resources>
-         <!-- regular resource processsing for everything except logback.xml -->
+         <!-- regular resource processing for everything except logback.xml -->
          <resource>
             <directory>src/main/resources</directory>
          </resource>
