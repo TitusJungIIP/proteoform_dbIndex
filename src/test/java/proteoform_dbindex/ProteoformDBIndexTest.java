@@ -236,4 +236,65 @@ public class ProteoformDBIndexTest {
 
 	}
 
+	@Test
+	public void testingProteoformIndex_UniprotMouse_with_contaminants() throws IOException {
+		// paramFile with input FASTA file, missedcleavages, etc.
+		// this file is pointing to P42681.fasta file
+		// change the paths correspondingly
+		final File paramFile = new ClassPathResource("blazmass_uniprot_mouse.params").getFile();
+		// create index
+		final String sufix = null;
+		final UniprotProteinLocalRetriever uplr = new UniprotProteinLocalRetriever(uniprotReleasesFolder, true);
+		final ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile, sufix, uplr,
+				uniprotVersion, maxNumVariationsPerPeptide);
+
+		try {
+			System.out.println();
+			System.out.println("Looking for the proteins from peptide " + "MACARPLISVYSEK");
+			final Set<IndexedProtein> proteins = proteoformDBIndex.getProteins("MACARPLISVYSEK");
+			for (final IndexedProtein indexedProtein : proteins) {
+				System.out.println(indexedProtein.getAccession());
+				System.out.println(indexedProtein.getFastaDefLine());
+			}
+
+		} catch (final Exception e) {
+			e.printStackTrace();
+			fail();
+		} catch (final DBIndexStoreException e) {
+			e.printStackTrace();
+			fail();
+		}
+
+	}
+
+	@Test
+	public void testingContaminantFasta() throws IOException {
+		// paramFile with input FASTA file, missedcleavages, etc.
+		// this file is pointing to P42681.fasta file
+		// change the paths correspondingly
+		final File paramFile = new ClassPathResource("blazmass_contaminant.params").getFile();
+		// create index
+		final String sufix = null;
+		final UniprotProteinLocalRetriever uplr = new UniprotProteinLocalRetriever(uniprotReleasesFolder, true);
+		final ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile, sufix, uplr,
+				uniprotVersion, maxNumVariationsPerPeptide);
+
+		try {
+			System.out.println();
+			System.out.println("Looking for the proteins from peptide " + "MAAALLLALAFTLLSGQGACAAAGTIQTSVQEVNSK");
+			final Set<IndexedProtein> proteins = proteoformDBIndex.getProteins("MAAALLLALAFTLLSGQGACAAAGTIQTSVQEVNSK");
+			for (final IndexedProtein indexedProtein : proteins) {
+				System.out.println(indexedProtein.getAccession());
+				System.out.println(indexedProtein.getFastaDefLine());
+			}
+
+		} catch (final Exception e) {
+			e.printStackTrace();
+			fail();
+		} catch (final DBIndexStoreException e) {
+			e.printStackTrace();
+			fail();
+		}
+
+	}
 }
