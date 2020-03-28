@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.scripps.yates</groupId>
   <artifactId>proteoform_dbindex</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>0.1.1-SNAPSHOT</version>
   <build>
       <resources>
          <!-- regular resource processing for everything except logback.xml -->
@@ -53,7 +53,7 @@
   	<dependency>
   		<groupId>edu.scripps.yates</groupId>
   		<artifactId>dbindex</artifactId>
-  		<version>1.2.1-SNAPSHOT</version>
+  		<version>1.2.2-SNAPSHOT</version>
   	</dependency>
   	<dependency>
   		<groupId>org.proteored.miape.api</groupId>
@@ -70,5 +70,10 @@
   			</exclusion>
   		</exclusions>
   	</dependency>
-  </dependencies>
+  	<dependency>
+  		<groupId>edu.scripps.yates</groupId>
+  		<artifactId>pint.annotations</artifactId>
+  		<version>1.0.3-SNAPSHOT</version>
+  	</dependency>
+   </dependencies>
 </project>
