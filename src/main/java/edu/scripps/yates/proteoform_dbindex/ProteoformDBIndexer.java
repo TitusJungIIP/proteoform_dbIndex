@@ -91,7 +91,8 @@ public class ProteoformDBIndexer extends DBIndexer {
 
 		proteoformRetriever = new UniprotProteoformRetrieverFromXML(uplr, uniprotVersion);
 		final boolean lookProteoforms = sparam.isLookProteoforms() != null ? sparam.isLookProteoforms() : false;
-		proteoformRetriever.setRetrieveIsoforms(lookProteoforms);
+// do not retrieve isoforms because they are already retrieved by the FASTA reader
+		proteoformRetriever.setRetrieveIsoforms(false);
 		proteoformRetriever.setRetrievePTMs(lookProteoforms);
 		proteoformRetriever.setRetrieveProteoforms(lookProteoforms);
 
@@ -131,15 +132,14 @@ public class ProteoformDBIndexer extends DBIndexer {
 
 		final Accession accPair = FastaParser.getACC(proteinFastaHeader);
 		protAccession = accPair.getAccession();
-
-		String canonicalAccession = null;
+		logger.debug("Processing protein " + proteinFastaHeader);
+		if ("2".equals(FastaParser.getIsoformVersion(protAccession))) {
+			logger.debug(protAccession);
+		}
 		if (accPair.getAccessionType() == AccessionType.UNKNOWN) {
 			logger.debug("Uniprot accession cannot be extracted from fasta header:  '" + proteinFastaHeader + "'");
 			isUniprot = false;
 			protAccession = accPair.getAccession();
-			canonicalAccession = protAccession;
-		} else {
-			canonicalAccession = FastaParser.getNoIsoformAccession(protAccession);
 		}
 
 		final Collection<String> digestProtein = digestProtein(canonicalProtSeq);
@@ -147,7 +147,7 @@ public class ProteoformDBIndexer extends DBIndexer {
 
 		Map<String, List<Proteoform>> proteoformMap = new THashMap<String, List<Proteoform>>();
 		if (useUniprot && isUniprot) {
-			proteoformMap = proteoformRetriever.getProteoforms(canonicalAccession);
+			proteoformMap = proteoformRetriever.getProteoforms(protAccession);
 		}
 		if (usePhosphosite && isUniprot) {
 			mergeMaps(proteoformMap,
@@ -155,12 +155,12 @@ public class ProteoformDBIndexer extends DBIndexer {
 		}
 		// get proteoforms for the protein
 
-		final List<Proteoform> proteoforms = proteoformMap.get(canonicalAccession);
+		final List<Proteoform> proteoforms = proteoformMap.get(protAccession);
 		// separate isoforms from others
-		// others here
+		// isoforms here
 		final List<Proteoform> isoformProteoforms = ProteoformUtil.getProteoformsAs(ProteoformType.ISOFORM,
 				proteoforms);
-		// isoforms here
+		// others here
 		final List<Proteoform> nonIsoformProteoforms = ProteoformUtil
 				.getProteoformsDifferentThan(ProteoformType.ISOFORM, proteoforms);
 

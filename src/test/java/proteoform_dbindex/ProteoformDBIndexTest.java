@@ -16,6 +16,7 @@ import edu.scripps.yates.annotations.uniprot.UniprotProteinLocalRetriever;
 import edu.scripps.yates.dbindex.util.IndexUtil;
 import edu.scripps.yates.proteoform_dbindex.ProteoformDBIndexInterface;
 import edu.scripps.yates.proteoform_dbindex.model.IndexedSequenceWithPTMs;
+import edu.scripps.yates.proteoform_dbindex.model.PTM;
 import edu.scripps.yates.utilities.fasta.dbindex.DBIndexStoreException;
 import edu.scripps.yates.utilities.fasta.dbindex.IndexedProtein;
 import edu.scripps.yates.utilities.fasta.dbindex.IndexedSequence;
@@ -296,5 +297,47 @@ public class ProteoformDBIndexTest {
 			fail();
 		}
 
+	}
+
+	@Test
+	public void testingProteoformIndex_TitusMar2020_4() throws IOException {
+		// paramFile with input FASTA file, missedcleavages, etc.
+		// this file is pointing to P42681.fasta file
+		// change the paths correspondingly
+		final File paramFile = new File(
+				"C:\\Users\\salvador\\Desktop\\ProteoformIndex\\UniProt_Human_reviewed_contaminant_04-02-2019_reversed.params");
+		// create index
+		final String sufix = null;
+		final UniprotProteinLocalRetriever uplr = new UniprotProteinLocalRetriever(uniprotReleasesFolder, true);
+		final ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile, sufix, uplr,
+				uniprotVersion, maxNumVariationsPerPeptide);
+		final double parentMass = 872.508;
+		System.out.println(parentMass);
+		try {
+			final List<IndexedSequence> sequences = proteoformDBIndex.getSequences(parentMass, 0.08725);
+			for (final IndexedSequence indexedSequence : sequences) {
+				final List<Integer> proteinIds = indexedSequence.getProteinIds();
+				for (final Integer proteinID : proteinIds) {
+					final IndexedProtein protein = proteoformDBIndex.getIndexedProteinById(proteinID);
+					System.out.println(protein.getAccession());
+				}
+				final List<String> proteinDescArray = indexedSequence.getProteinDescArray();
+				for (final String proteinDesc : proteinDescArray) {
+					System.out.println(proteinDesc);
+				}
+				System.out.println(indexedSequence.getSequence());
+				final IndexedSequenceWithPTMs pep = (IndexedSequenceWithPTMs) indexedSequence;
+				final List<PTM> ptms = pep.getPtms();
+				for (final PTM ptm : ptms) {
+					System.out.println(ptm.getPosInPeptide());
+
+				}
+				System.out.println(pep.getModSequence());
+
+			}
+		} catch (final DBIndexStoreException e) {
+			e.printStackTrace();
+			fail();
+		}
 	}
 }
