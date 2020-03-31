@@ -68,12 +68,21 @@
   				<groupId>ch.qos.logback</groupId>
   				<artifactId>logback-classic</artifactId>
   			</exclusion>
+  			<exclusion>
+  				<groupId>edu.scripps.yates</groupId>
+  				<artifactId>dtaselectparser</artifactId>
+  			</exclusion>
   		</exclusions>
   	</dependency>
   	<dependency>
   		<groupId>edu.scripps.yates</groupId>
   		<artifactId>pint.annotations</artifactId>
   		<version>1.0.3-SNAPSHOT</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>edu.scripps.yates</groupId>
+  		<artifactId>utilities</artifactId>
+  		<version>1.6-SNAPSHOT</version>
   	</dependency>
    </dependencies>
 </project>
