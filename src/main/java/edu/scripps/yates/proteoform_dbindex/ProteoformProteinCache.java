@@ -194,7 +194,7 @@ public class ProteoformProteinCache extends ProteinCache {
 
 		load();
 		if (!indexesToWrite.isEmpty()) {
-			log.info("Writting protein cache to file...");
+			log.debug("Writting protein cache to file...");
 			final WriteLock writeLock = lock.writeLock();
 			try {
 				writeLock.lock();

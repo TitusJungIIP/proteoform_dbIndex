@@ -310,7 +310,7 @@ public class ProteoformDBIndexTest {
 		final String sufix = null;
 		final UniprotProteinLocalRetriever uplr = new UniprotProteinLocalRetriever(uniprotReleasesFolder, true);
 		final ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile, sufix, uplr,
-				uniprotVersion, maxNumVariationsPerPeptide);
+				uniprotVersion, 2);
 		final double parentMass = 872.508;
 		System.out.println(parentMass);
 		try {
