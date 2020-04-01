@@ -67,7 +67,7 @@ public class ProteoformDBIndexUtil {
 		return instance;
 	}
 
-	private String getProteoformSequenceOriginalChange(Proteoform proteoform, Integer proteoformPositionInProtein) {
+	private String getProteoformSequenceOriginalChange(Proteoform proteoform) {
 		if (proteoform.isOriginal()) {
 			return null;
 		}
@@ -180,7 +180,7 @@ public class ProteoformDBIndexUtil {
 			for (final int position : phosphorilatedPositions.toArray()) {
 				final char aa = proteinSeq.charAt(position - 1);
 				final Proteoform proteoform = new Proteoform(accession, proteinSeq, accession, proteinSeq, "",
-						"Phospho(" + aa + ")_at_" + position, null, null, ProteoformType.PTM, true);
+						"Phospho(" + aa + ")_at_" + position, null, null, null, ProteoformType.PTM, true, true);
 
 				final UniprotPTMCVTerm uniprotPTMCVTerm = UniprotPTMCVReader.getInstance()
 						.getPtmsByID(getPhosphoSitePTMID(aa));
@@ -307,8 +307,7 @@ public class ProteoformDBIndexUtil {
 				for (final Proteoform proteoform : proteoforms) {
 
 					final int positionInPeptide = proteoformPositionInProtein - peptideInitInOriginalProtein + 1;
-					final String original = getProteoformSequenceOriginalChange(proteoform,
-							proteoformPositionInProtein);
+					final String original = getProteoformSequenceOriginalChange(proteoform);
 					if (original != null && proteoformPositionInProtein + original.length() - 1 > peptideEndInProtein) {
 						// the change is out of the peptide
 						continue;
@@ -380,8 +379,7 @@ public class ProteoformDBIndexUtil {
 							&& proteoformPositionInMainProtein <= peptideEndInMainProtein) {
 
 						final int positionInPeptide = proteoformPositionInMainProtein - peptideInitInMainProtein + 1;
-						final String original = getProteoformSequenceOriginalChange(proteoformToApply,
-								proteoformPositionInMainProtein);
+						final String original = getProteoformSequenceOriginalChange(proteoformToApply);
 						if (original != null
 								&& proteoformPositionInMainProtein + original.length() - 1 > peptideEndInMainProtein) {
 							// the change is out of the peptide
