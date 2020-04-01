@@ -158,162 +158,150 @@ public class ProteoformDBIndexer extends DBIndexer {
 		final List<Proteoform> proteoforms = proteoformMap.get(protAccession);
 		// separate isoforms from others
 		// isoforms here
-		final List<Proteoform> isoformProteoforms = ProteoformUtil.getProteoformsAs(ProteoformType.ISOFORM,
-				proteoforms);
+		final List<Proteoform> isoformProteoforms = ProteoformUtil.getProteoformsAs(proteoforms,
+				ProteoformType.ISOFORM);
 		// others here
-		final List<Proteoform> nonIsoformProteoforms = ProteoformUtil
-				.getProteoformsDifferentThan(ProteoformType.ISOFORM, proteoforms);
+		final List<Proteoform> nonIsoformProteoforms = ProteoformUtil.getProteoformsDifferentThan(proteoforms,
+				ProteoformType.ISOFORM);
 
 		final TIntObjectHashMap<List<Proteoform>> nonIsoformsProteoformsByPositionInMainProtein = ProteoformDBIndexUtil
 				.getInstance().getProteoformsByPositionInProtein(nonIsoformProteoforms);
 
-		// note that here we have the loop until i <
-		// isoformProteoforms.size()+1, to include the canonical
-		for (int i = 0; i < isoformProteoforms.size() + 1; i++) {
-			String proteinSequence = canonicalProtSeq;
-			String proteinAccession = protAccession;
-			String proteinFastaHeaderTMP = proteinFastaHeader;
-			Proteoform isoform = null;
-			if (i < isoformProteoforms.size()) {
-				isoform = isoformProteoforms.get(i);
-				proteinSequence = isoform.getSeq();
-				proteinAccession = isoform.getId();
-				proteinFastaHeaderTMP = "sp|" + isoform.getId() + "|" + isoform.getName() + " "
-						+ isoform.getDescription();
+		String proteinSequence = canonicalProtSeq;
+		String proteinAccession = protAccession;
+		String proteinFastaHeaderTMP = proteinFastaHeader;
+		Proteoform isoform = null;
+		// isoformProteoforms only will contain an isoform (an only one) when the
+		// protein of interest here is that one isoform
+		if (!isoformProteoforms.isEmpty()) {
+			isoform = isoformProteoforms.get(0);
+			proteinSequence = isoform.getSeq();
+			proteinAccession = isoform.getId();
+			proteinFastaHeaderTMP = isoform.getFastaHeader();
+		}
+		final int proteinId = proteinCache.addProtein(proteinFastaHeaderTMP, proteinSequence);
+		final int proteinLength = proteinSequence.length();
+		// here, if isoform is null, we are in the latest index 'i'
+		// which is when we apply all the nonIsoforms to the main
+		// protein entry
+
+		Collection<String> peptides;
+		if (isoform == null) {
+			peptides = new ArrayList<String>();
+			peptides.addAll(canonicalProteinPeptides);
+		} else {
+			// digest isoform sequence
+			peptides = getEnzyme().cleave(proteinSequence, MIN_PEPTIDE_LENGHT, MAX_PEPTIDE_LENGTH, null);
+		}
+
+		final Set<String> peptideKeys = new THashSet<String>();
+		for (final String peptideSequence : peptides) {
+			if (peptideInclusionList != null && !peptideInclusionList.contains(peptideSequence)) {
+				continue;
 			}
-			final int proteinId = proteinCache.addProtein(proteinFastaHeaderTMP, proteinSequence);
-			final int proteinLength = proteinSequence.length();
-			// here, if isoform is null, we are in the latest index 'i'
-			// which is when we apply all the nonIsoforms to the main
-			// protein entry
+			// at least one of this AAs has to be in the sequence:
+			final char[] mandatoryInternalAAs = sparam.getMandatoryInternalAAs();
 
-			Collection<String> peptides;
-			if (isoform == null) {
-				peptides = new ArrayList<String>();
-				peptides.addAll(canonicalProteinPeptides);
-			} else {
-				// digest isoform sequence
-				peptides = getEnzyme().cleave(proteinSequence, MIN_PEPTIDE_LENGHT, MAX_PEPTIDE_LENGTH, null);
-			}
+			try {
+				// peptide start and end in protein
+				int start = 0;
+				int end = 0;
 
-			final Set<String> peptideKeys = new THashSet<String>();
-			for (final String peptideSequence : peptides) {
-				if (peptideSequence.startsWith("TQISLSTDEELPEKYTQ")) {
-					System.out.println(peptideSequence);
+				if (peptideFilter != null && !peptideFilter.isValid(peptideSequence)) {
+					logger.debug("Skipping peptide '" + peptideSequence + "' by filter");
+					break;
 				}
-				if (peptideInclusionList != null && !peptideInclusionList.contains(peptideSequence)) {
-					continue;
-				}
-				// at least one of this AAs has to be in the sequence:
-				final char[] mandatoryInternalAAs = sparam.getMandatoryInternalAAs();
+				final List<SequenceChange> sequenceChanges = ProteoformDBIndexUtil.getInstance()
+						.getSequenceChangesInPeptide(peptideSequence, proteinSequence.indexOf(peptideSequence) + 1,
+								nonIsoformsProteoformsByPositionInMainProtein, isoform);
+				final List<SequenceWithModification> modifiedPeptides = ProteoformDBIndexUtil.getInstance()
+						.getAllCombinationsForPeptide(peptideSequence, proteinSequence,
+								proteinSequence.indexOf(peptideSequence) + 1, getEnzyme(), sequenceChanges,
+								maxNumVariationsPerPeptide, extendedAssignMass, new THashSet<String>());
 
-				try {
-					// peptide start and end in protein
-					int start = 0;
-					int end = 0;
-
-					if (peptideFilter != null && !peptideFilter.isValid(peptideSequence)) {
-						logger.debug("Skipping peptide '" + peptideSequence + "' by filter");
-						break;
+				for (final SequenceWithModification modifiedPeptide : modifiedPeptides) {
+					final String sequenceAfterModification = modifiedPeptide.getSequenceAfterModification();
+					if (sequenceAfterModification.length() < Constants.MIN_PEP_LENGTH) { // Constants.MIN_PRECURSOR
+						continue;
 					}
-//					if (peptideSequence.equals("SPSPDDILERVAADVKEYER")) {
-//						logger.info(peptideSequence);
-//					}
-					final List<SequenceChange> sequenceChanges = ProteoformDBIndexUtil.getInstance()
-							.getSequenceChangesInPeptide(peptideSequence, proteinSequence.indexOf(peptideSequence) + 1,
-									nonIsoformsProteoformsByPositionInMainProtein, isoform);
-					final List<SequenceWithModification> modifiedPeptides = ProteoformDBIndexUtil.getInstance()
-							.getAllCombinationsForPeptide(peptideSequence, proteinSequence,
-									proteinSequence.indexOf(peptideSequence) + 1, getEnzyme(), sequenceChanges,
-									maxNumVariationsPerPeptide, extendedAssignMass, new THashSet<String>());
-
-					for (final SequenceWithModification modifiedPeptide : modifiedPeptides) {
-						final String sequenceAfterModification = modifiedPeptide.getSequenceAfterModification();
-//						if (sequenceAfterModification.equals("SPSPDDVLERVAADVKEYER")) {
-//							logger.info("asdf");
-//						}
-						if (sequenceAfterModification.length() < Constants.MIN_PEP_LENGTH) { // Constants.MIN_PRECURSOR
+					if (mandatoryInternalAAs != null) {
+						boolean found = false;
+						for (final char internalAA : mandatoryInternalAAs) {
+							if (sequenceAfterModification.indexOf(internalAA) >= 0) {
+								found = true;
+							}
+						}
+						if (!found) {
 							continue;
 						}
-						if (mandatoryInternalAAs != null) {
-							boolean found = false;
-							for (final char internalAA : mandatoryInternalAAs) {
-								if (sequenceAfterModification.indexOf(internalAA) >= 0) {
-									found = true;
-								}
-							}
-							if (!found) {
-								continue;
+					}
+					// Salva added 24Nov2014
+					double precMass = 0.0;
+					if (sparam.isH2OPlusProtonAdded())
+						precMass += AssignMass.H2O_PROTON;
+					precMass += AssignMass.getcTerm();
+					precMass += AssignMass.getnTerm();
+					// CALCULATE MASS
+					precMass += modifiedPeptide.getSequenceMassAfterModification();
+
+					if (precMass > sparam.getMaxPrecursorMass()) {
+						continue;
+					}
+					if (precMass < sparam.getMinPrecursorMass()) {
+						continue;
+					}
+					// before adding the sequence:
+					final String key = proteinAccession + "|" + modifiedPeptide.getSequenceWithModification() + "|"
+							+ (modifiedPeptide.getProteinSequence()
+									.indexOf(modifiedPeptide.getSequenceBeforeModification()) + 1);
+					if (peptideKeys.contains(key)) {
+						continue;
+					} else {
+						peptideKeys.add(key);
+					}
+					// check if index will accept it
+					final FilterResult filterResult = indexStore.filterSequence(precMass, sequenceAfterModification);
+					if (filterResult.equals(FilterResult.SKIP_PROTEIN_START)) {
+						// bail out earlier as we are no longer
+						// interested in this protein starting at
+						// start
+						continue; // move to new start position
+					} else if (filterResult.equals(FilterResult.INCLUDE)) {
+
+						start = modifiedPeptide.getProteinSequence()
+								.indexOf(modifiedPeptide.getSequenceBeforeModification());
+						end = start + modifiedPeptide.getSequenceBeforeModification().length() - 1;
+						final int resLeftI = start >= Constants.MAX_INDEX_RESIDUE_LEN
+								? start - Constants.MAX_INDEX_RESIDUE_LEN
+								: 0;
+						final int resLeftLen = Math.min(Constants.MAX_INDEX_RESIDUE_LEN, start);
+						final StringBuilder sbLeft = new StringBuilder(Constants.MAX_INDEX_RESIDUE_LEN);
+						for (int ii = 0; ii < resLeftLen; ++ii) {
+							sbLeft.append(modifiedPeptide.getProteinSequence().charAt(ii + resLeftI));
+						}
+						final int resRightI = end + 1;
+						final int resRightLen = Math.min(Constants.MAX_INDEX_RESIDUE_LEN, proteinLength - end - 1);
+						final StringBuilder sbRight = new StringBuilder(Constants.MAX_INDEX_RESIDUE_LEN);
+						if (resRightI < proteinLength) {
+							for (int jj = 0; jj < resRightLen; ++jj) {
+								sbRight.append(modifiedPeptide.getProteinSequence().charAt(jj + resRightI));
 							}
 						}
-						// Salva added 24Nov2014
-						double precMass = 0.0;
-						if (sparam.isH2OPlusProtonAdded())
-							precMass += AssignMass.H2O_PROTON;
-						precMass += AssignMass.getcTerm();
-						precMass += AssignMass.getnTerm();
-						// CALCULATE MASS
-						precMass += modifiedPeptide.getSequenceMassAfterModification();
 
-						if (precMass > sparam.getMaxPrecursorMass()) {
-							continue;
+						// add -- markers to fill
+						// Constants.MAX_INDEX_RESIDUE_LEN length
+						final int lLen = sbLeft.length();
+						for (int c = 0; c < Constants.MAX_INDEX_RESIDUE_LEN - lLen; ++c) {
+							sbLeft.insert(0, '-');
 						}
-						if (precMass < sparam.getMinPrecursorMass()) {
-							continue;
+						final int rLen = sbRight.length();
+						for (int c = 0; c < Constants.MAX_INDEX_RESIDUE_LEN - rLen; ++c) {
+							sbRight.append('-');
 						}
-						// check if index will accept it
-						final FilterResult filterResult = indexStore.filterSequence(precMass,
-								sequenceAfterModification);
-						if (filterResult.equals(FilterResult.SKIP_PROTEIN_START)) {
-							// bail out earlier as we are no longer
-							// interested in this protein starting at
-							// start
-							continue; // move to new start position
-						} else if (filterResult.equals(FilterResult.INCLUDE)) {
 
-							start = modifiedPeptide.getProteinSequence()
-									.indexOf(modifiedPeptide.getSequenceBeforeModification());
-							end = start + modifiedPeptide.getSequenceBeforeModification().length() - 1;
-							final int resLeftI = start >= Constants.MAX_INDEX_RESIDUE_LEN
-									? start - Constants.MAX_INDEX_RESIDUE_LEN
-									: 0;
-							final int resLeftLen = Math.min(Constants.MAX_INDEX_RESIDUE_LEN, start);
-							final StringBuilder sbLeft = new StringBuilder(Constants.MAX_INDEX_RESIDUE_LEN);
-							for (int ii = 0; ii < resLeftLen; ++ii) {
-								sbLeft.append(modifiedPeptide.getProteinSequence().charAt(ii + resLeftI));
-							}
-							final int resRightI = end + 1;
-							final int resRightLen = Math.min(Constants.MAX_INDEX_RESIDUE_LEN, proteinLength - end - 1);
-							final StringBuilder sbRight = new StringBuilder(Constants.MAX_INDEX_RESIDUE_LEN);
-							if (resRightI < proteinLength) {
-								for (int jj = 0; jj < resRightLen; ++jj) {
-									sbRight.append(modifiedPeptide.getProteinSequence().charAt(jj + resRightI));
-								}
-							}
+						final String resLeft = sbLeft.toString();
+						final String resRight = sbRight.toString();
 
-							// add -- markers to fill
-							// Constants.MAX_INDEX_RESIDUE_LEN length
-							final int lLen = sbLeft.length();
-							for (int c = 0; c < Constants.MAX_INDEX_RESIDUE_LEN - lLen; ++c) {
-								sbLeft.insert(0, '-');
-							}
-							final int rLen = sbRight.length();
-							for (int c = 0; c < Constants.MAX_INDEX_RESIDUE_LEN - rLen; ++c) {
-								sbRight.append('-');
-							}
-
-							final String resLeft = sbLeft.toString();
-							final String resRight = sbRight.toString();
-
-							// before adding the sequence:
-							final String key = proteinAccession + "|" + modifiedPeptide.getSequenceWithModification()
-									+ "|" + (modifiedPeptide.getProteinSequence()
-											.indexOf(modifiedPeptide.getSequenceBeforeModification()) + 1);
-							if (peptideKeys.contains(key)) {
-								continue;
-							} else {
-								peptideKeys.add(key);
-							}
 //							if (modifiedPeptide.getSequenceWithModification().startsWith("TQISLSTDEELPEKYTQRR")) {
 //								logger.info("asdf");
 //							}
@@ -325,23 +313,28 @@ public class ProteoformDBIndexer extends DBIndexer {
 //							if (proteinId == 7753) {
 //								logger.info("asdf");
 //							}
-							indexStore.addSequence(precMass,
-									proteinSequence.indexOf(modifiedPeptide.getSequenceBeforeModification()),
-									modifiedPeptide.getSequenceBeforeModification().length(),
-									modifiedPeptide.getSequenceWithModification(), resLeft, resRight, proteinId);
-						}
-					}
-					// System.out.println("\t" +
-					// peptideSeqString);
 
-				} catch (final DBIndexStoreException e) {
-					e.printStackTrace();
-					logger.error("Error writing sequence to db index store, ", e);
-				} catch (final UnknownElementMassException e) {
-					e.printStackTrace();
-					logger.error("Error writing sequence to db index store, ", e);
+						indexStore.addSequence(precMass,
+								proteinSequence.indexOf(modifiedPeptide.getSequenceBeforeModification()),
+								modifiedPeptide.getSequenceBeforeModification().length(),
+								modifiedPeptide.getSequenceWithModification(), resLeft, resRight, proteinId);
+					}
+
 				}
+				// System.out.println("\t" +
+				// peptideSeqString);
+
+			} catch (final DBIndexStoreException e) {
+				e.printStackTrace();
+				logger.error("Error writing sequence to db index store, ", e);
+				throw new IOException(e);
+			} catch (final UnknownElementMassException e) {
+				e.printStackTrace();
+				logger.error("Error writing sequence to db index store, ", e);
+				throw new IOException(e);
 			}
+
+			System.out.println("asdf");
 		}
 
 	}
