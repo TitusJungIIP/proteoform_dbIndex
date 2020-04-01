@@ -71,7 +71,9 @@ public class ByteArrayUtil {
 			}
 
 			final String sequence = proteinCache.getPeptideSequence(proteinIds.get(0), offset, length, ptms);
+
 			final String cleanSequence = FastaParser.cleanSequenceAndApplySequenceVariances(sequence);
+			// pre and post will be set below at the ResidueInfo
 			final IndexedSequenceWithPTMs ret = new IndexedSequenceWithPTMs(0, mass, cleanSequence, "", "");
 
 			ret.setIsModified(!ptms.isEmpty());
