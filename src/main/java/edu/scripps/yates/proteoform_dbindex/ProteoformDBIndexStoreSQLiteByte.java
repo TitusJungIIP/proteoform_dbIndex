@@ -100,9 +100,7 @@ public class ProteoformDBIndexStoreSQLiteByte extends DBIndexStoreSQLiteByte {
 			// data[rowId] = byteBuffer;
 			dataMap.put(rowId, byteBuffer);
 		}
-		if (precMass == 2776.265812566) {
-			logger.info("asdf");
-		}
+
 		byteBuffer.add(ByteArrayUtil.toByteArray(precMass, seqOffset, seqLength, proteinId, ptms));
 
 		// commit this mass after COMMIT_SEQUENCES sequences

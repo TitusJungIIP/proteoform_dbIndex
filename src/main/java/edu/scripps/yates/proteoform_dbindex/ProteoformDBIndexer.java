@@ -302,18 +302,6 @@ public class ProteoformDBIndexer extends DBIndexer {
 						final String resLeft = sbLeft.toString();
 						final String resRight = sbRight.toString();
 
-//							if (modifiedPeptide.getSequenceWithModification().startsWith("TQISLSTDEELPEKYTQRR")) {
-//								logger.info("asdf");
-//							}
-//							if (Double.compare(precMass, 665.3505890660001) == 0
-//									&& modifiedPeptide.getSequenceBeforeModification().length() == 7
-//									&& proteinId == 7753) {
-//								logger.info("asdf");
-//							}
-//							if (proteinId == 7753) {
-//								logger.info("asdf");
-//							}
-
 						indexStore.addSequence(precMass,
 								proteinSequence.indexOf(modifiedPeptide.getSequenceBeforeModification()),
 								modifiedPeptide.getSequenceBeforeModification().length(),
@@ -321,8 +309,6 @@ public class ProteoformDBIndexer extends DBIndexer {
 					}
 
 				}
-				// System.out.println("\t" +
-				// peptideSeqString);
 
 			} catch (final DBIndexStoreException e) {
 				e.printStackTrace();
@@ -334,7 +320,6 @@ public class ProteoformDBIndexer extends DBIndexer {
 				throw new IOException(e);
 			}
 
-			System.out.println("asdf");
 		}
 
 	}
