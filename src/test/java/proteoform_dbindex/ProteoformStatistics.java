@@ -274,7 +274,7 @@ public class ProteoformStatistics {
 			for (final int position : phosphorilatedPositions.toArray()) {
 				final char aa = proteinSeq.charAt(position - 1);
 				final Proteoform proteoform = new Proteoform(accession, proteinSeq, accession, proteinSeq,
-						"Phospho(" + aa + ")_at_" + position, "", null, null, ProteoformType.PTM, true);
+						"Phospho(" + aa + ")_at_" + position, "", null, null, null, ProteoformType.PTM, true, true);
 
 				final UniprotPTMCVTerm uniprotPTMCVTerm = UniprotPTMCVReader.getInstance().getPtmsByID(getPTMID(aa));
 
@@ -456,8 +456,7 @@ public class ProteoformStatistics {
 	 * @param peptideSeq
 	 * @param peptideInitInProtein
 	 * @param proteoformsByPositionInMainProtein
-	 * @param isoform
-	 *            can be null
+	 * @param isoform                            can be null
 	 * @return
 	 * @throws UnknownElementMassException
 	 */
@@ -477,8 +476,7 @@ public class ProteoformStatistics {
 	 * @param peptideSeq
 	 * @param peptideInitInOriginalProtein
 	 * @param proteoformsByPositionInProtein
-	 * @param isoform
-	 *            can be null
+	 * @param isoform                        can be null
 	 * @return
 	 * @throws UnknownElementMassException
 	 */
@@ -538,8 +536,7 @@ public class ProteoformStatistics {
 	 * 
 	 * @param isoformPeptideSeq
 	 * @param proteoformsByPositionInMainProtein
-	 * @param isoform
-	 *            is not null
+	 * @param isoform                            is not null
 	 * 
 	 * @return
 	 * @throws UnknownElementMassException
