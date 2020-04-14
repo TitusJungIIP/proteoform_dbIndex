@@ -129,10 +129,10 @@ public class ProteoformStatistics {
 				// // continue;
 				// }
 				final List<Proteoform> proteoforms = proteoformMap.get(accession);
-				final List<Proteoform> nonIsoformProteoforms = ProteoformUtil
-						.getProteoformsDifferentThan(ProteoformType.ISOFORM, proteoforms);
-				final List<Proteoform> isoformProteoforms = ProteoformUtil.getProteoformsAs(ProteoformType.ISOFORM,
-						proteoforms);
+				final List<Proteoform> nonIsoformProteoforms = ProteoformUtil.getProteoformsDifferentThan(proteoforms,
+						ProteoformType.ISOFORM);
+				final List<Proteoform> isoformProteoforms = ProteoformUtil.getProteoformsAs(proteoforms,
+						ProteoformType.ISOFORM);
 
 				final Map<Integer, List<Proteoform>> proteoformsByPositionInMainProtein = getProteoformsByPositionInProtein(
 						nonIsoformProteoforms);
