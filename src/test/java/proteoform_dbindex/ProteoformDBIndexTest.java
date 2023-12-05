@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -16,6 +17,7 @@ import edu.scripps.yates.annotations.uniprot.UniprotProteinLocalRetriever;
 import edu.scripps.yates.dbindex.util.IndexUtil;
 import edu.scripps.yates.proteoform_dbindex.ProteoformDBIndexInterface;
 import edu.scripps.yates.proteoform_dbindex.model.IndexedSequenceWithPTMs;
+import edu.scripps.yates.proteoform_dbindex.model.PTM;
 import edu.scripps.yates.utilities.fasta.dbindex.DBIndexStoreException;
 import edu.scripps.yates.utilities.fasta.dbindex.IndexedProtein;
 import edu.scripps.yates.utilities.fasta.dbindex.IndexedSequence;
@@ -296,5 +298,99 @@ public class ProteoformDBIndexTest {
 			fail();
 		}
 
+	}
+
+	@Test
+	public void testingProteoformIndex_TitusMar2020_4() throws IOException {
+		// paramFile with input FASTA file, missedcleavages, etc.
+		// this file is pointing to P42681.fasta file
+		// change the paths correspondingly
+		final File paramFile = new File(
+				"C:\\Users\\salvador\\Desktop\\ProteoformIndex\\UniProt_Human_reviewed_contaminant_04-02-2019_reversed.params");
+		// create index
+		final String sufix = null;
+		final UniprotProteinLocalRetriever uplr = new UniprotProteinLocalRetriever(uniprotReleasesFolder, true);
+		final ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile, sufix, uplr,
+				uniprotVersion, 2);
+		// peptide SSFQSCQIISLFTFAVGVNICLGFTAHR is present in both Q13822 and Q13822-3
+		// proteins. However, only Q13822-3 has a sequence conflict on position 23, so
+		// transformed peptide SSFQSCQIISLFTFAVGVSICLGFTAHR will have to be assigned to
+		// the Q13822-3 isoform as a proteoform of it.
+		final double parentMass = IndexUtil.calculateMass("SSFQSCQIISLFTFAVGVNICLGFTAHR");
+		final double parentMass2 = IndexUtil.calculateMass("SSFQSCQIISLFTFAVGVSICLGFTAHR");
+		System.out.println(parentMass);
+		try {
+			final List<IndexedSequence> sequences = proteoformDBIndex.getSequences(parentMass2, 0.08725).stream()
+					.filter(idxSeq -> idxSeq.getSequence().startsWith("SSF")).collect(Collectors.toList());
+			for (final IndexedSequence indexedSequence : sequences) {
+				final List<Integer> proteinIds = indexedSequence.getProteinIds();
+				for (final Integer proteinID : proteinIds) {
+					final IndexedProtein protein = proteoformDBIndex.getIndexedProteinById(proteinID);
+					System.out.println(protein.getAccession());
+				}
+				final List<String> proteinDescArray = indexedSequence.getProteinDescArray();
+				for (final String proteinDesc : proteinDescArray) {
+					System.out.println(proteinDesc);
+				}
+				System.out.println(indexedSequence.getSequence());
+				final IndexedSequenceWithPTMs pep = (IndexedSequenceWithPTMs) indexedSequence;
+				final List<PTM> ptms = pep.getPtms();
+				for (final PTM ptm : ptms) {
+					System.out.println(ptm.getPosInPeptide());
+
+				}
+				System.out.println(pep.getModSequence());
+
+			}
+		} catch (final DBIndexStoreException e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+
+	@Test
+	public void testingProteoformIndex_TitusMar2020_5() throws IOException {
+		// paramFile with input FASTA file, missedcleavages, etc.
+		// this file is pointing to P42681.fasta file
+		// change the paths correspondingly
+		final File paramFile = new File("C:\\Users\\salvador\\Desktop\\ProteoformIndex\\Q13822.params");
+		// create index
+		final String sufix = null;
+		final UniprotProteinLocalRetriever uplr = new UniprotProteinLocalRetriever(uniprotReleasesFolder, true);
+		final ProteoformDBIndexInterface proteoformDBIndex = new ProteoformDBIndexInterface(paramFile, sufix, uplr,
+				uniprotVersion, 2);
+		// peptide GSTEAETRKFR is only present in Q13822-3
+		// protein and it has a sequence conflict on position 599, so
+		// transformed peptide GSTEAETRKYR will have to be assigned to
+		// the Q13822-3 isoform as a proteoform of it.
+		final double parentMass = IndexUtil.calculateMass("GSTEAETRKYR");
+
+		System.out.println(parentMass);
+		try {
+			final List<IndexedSequence> sequences = proteoformDBIndex.getSequences(parentMass, 0.08725);
+			for (final IndexedSequence indexedSequence : sequences) {
+				final List<Integer> proteinIds = indexedSequence.getProteinIds();
+				for (final Integer proteinID : proteinIds) {
+					final IndexedProtein protein = proteoformDBIndex.getIndexedProteinById(proteinID);
+					System.out.println(protein.getAccession());
+				}
+				final List<String> proteinDescArray = indexedSequence.getProteinDescArray();
+				for (final String proteinDesc : proteinDescArray) {
+					System.out.println(proteinDesc);
+				}
+				System.out.println(indexedSequence.getSequence());
+				final IndexedSequenceWithPTMs pep = (IndexedSequenceWithPTMs) indexedSequence;
+				final List<PTM> ptms = pep.getPtms();
+				for (final PTM ptm : ptms) {
+					System.out.println(ptm.getPosInPeptide());
+
+				}
+				System.out.println(pep.getModSequence());
+
+			}
+		} catch (final DBIndexStoreException e) {
+			e.printStackTrace();
+			fail();
+		}
 	}
 }

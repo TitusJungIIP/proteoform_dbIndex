@@ -51,7 +51,7 @@ public class PTM {
 							if (split.length == 2) {
 								tmp = split[1].length();
 							}
-							final int pos = position - tmp;
+							final int pos = position - tmp + 1;
 							final PTMCodeObj ptmObj = extendedAssignMass.getPTMByDescription(change.toString(), null);
 							final PTM ptm = new PTM(DynByteBuffer.toByteArray(pos)[0], ptmObj.getPtmCode());
 							ptms.add(ptm);
