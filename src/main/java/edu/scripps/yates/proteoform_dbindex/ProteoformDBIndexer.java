@@ -174,7 +174,7 @@ public class ProteoformDBIndexer extends DBIndexer {
 		// isoformProteoforms only will contain an isoform (an only one) when the
 		// protein of interest here is that one isoform
 		if (!isoformProteoforms.isEmpty()) {
-			isoform = isoformProteoforms.get(0);
+			isoform = isoformProteoforms.get(0 );
 			proteinSequence = isoform.getSeq();
 			proteinAccession = isoform.getId();
 			proteinFastaHeaderTMP = isoform.getFastaHeader();
@@ -191,7 +191,7 @@ public class ProteoformDBIndexer extends DBIndexer {
 			peptides.addAll(canonicalProteinPeptides);
 		} else {
 			// digest isoform sequence
-			peptides = getEnzyme().cleave(proteinSequence, MIN_PEPTIDE_LENGHT, MAX_PEPTIDE_LENGTH, null);
+			peptides = getEnzyme().cutSeq(proteinSequence, MIN_PEPTIDE_LENGHT, MAX_PEPTIDE_LENGTH, null, this.sparam.isSemiCleavage());
 		}
 
 		final Set<String> peptideKeys = new THashSet<String>();
@@ -324,8 +324,18 @@ public class ProteoformDBIndexer extends DBIndexer {
 
 	}
 
+	/**
+	 * Cut a Fasta protein sequence according to params spec and index the protein
+	 * and generated sequences
+	 *
+	 * Should be called once per unique Fasta sequence
+	 *
+	 * @param fasta fasta to index
+	 * @throws IOException
+	 */
+
 	private Collection<String> digestProtein(String sequence) {
-		final Collection<String> peptides = getEnzyme().cleave(sequence, MIN_PEPTIDE_LENGHT, MAX_PEPTIDE_LENGTH, null);
+		final Collection<String> peptides = getEnzyme().cutSeq(sequence, MIN_PEPTIDE_LENGHT, MAX_PEPTIDE_LENGTH, null, this.sparam.isSemiCleavage());
 		return peptides;
 	}
 

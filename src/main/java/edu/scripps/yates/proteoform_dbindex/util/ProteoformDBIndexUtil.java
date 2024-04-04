@@ -262,7 +262,7 @@ public class ProteoformDBIndexUtil {
 	 * @return
 	 * @throws UnknownElementMassException
 	 */
-	public List<SequenceChange> getSequenceChangesInPeptide(String peptideSeq, int peptideInitInProtein,
+	public List<SequenceChange>  getSequenceChangesInPeptide(String peptideSeq, int peptideInitInProtein,
 			TIntObjectHashMap<List<Proteoform>> nonIsoformsProteoformsByPositionInMainProtein, Proteoform isoform)
 			throws UnknownElementMassException {
 		if (isoform == null) {
